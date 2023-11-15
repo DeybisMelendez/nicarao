@@ -79,3 +79,22 @@ func GetPawnAttacks(isWhite bool, square Square, enemies uint64) uint64 {
 	}
 	return PawnBlackAttacksMasks[square] & enemies
 }
+func (s *Board) GenerateAttacksForPiece(piece Piece, from Square, occupied, friends, enemies uint64) uint64 {
+	//var attacks uint64
+
+	switch piece {
+	case Pawn:
+		return GetPawnAttacks(s.WhiteToMove, from, enemies)
+	case Knight:
+		return GetKnightAttacks(from, friends)
+	case Bishop:
+		return GetBishopAttacks(from, occupied, friends)
+	case Rook:
+		return GetRookAttacks(from, occupied, friends)
+	case Queen:
+		return GetBishopAttacks(from, occupied, friends) | GetRookAttacks(from, occupied, friends)
+	case King:
+		return GetKingAttacks(from, friends)
+	}
+	return 0
+}

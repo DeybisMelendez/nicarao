@@ -31,7 +31,7 @@ func (s *Board) ParseFEN(fen string) error {
 			file += Square(char - '0')
 		default:
 			piece := CharToPiece(char)
-			s.Bitboards[piece >= 7][piece%7] |= SetBit(0, rank*8+file)
+			s.Bitboards[piece <= 7][piece%7] |= SetBit(0, rank*8+file)
 			file++
 		}
 	}
@@ -74,9 +74,9 @@ func (s *Board) Print() {
 		fmt.Printf("%d  ", rank+1)
 		for file := Square(0); file < 8; file++ {
 			var square Square = rank*8 + file
-			piece := s.GetPiece(square, true)
+			piece := s.GetPiece(square, White)
 			if piece == None {
-				piece = s.GetPiece(square, false)
+				piece = s.GetPiece(square, Black)
 				if piece != None {
 					piece += 6
 				}

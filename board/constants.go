@@ -4,6 +4,26 @@ type Square uint8
 type Piece uint8
 
 var pieceTypes = []Piece{Pawn, Knight, Bishop, Rook, Queen, King}
+var piecePromotions = []Piece{Queen, Rook, Bishop, Knight}
+
+const White bool = true
+const Black bool = false
+const (
+	CastlingBlackShort uint8 = 1 << iota
+	CastlingBlackLong
+	CastlingWhiteShort
+	CastlingWhiteLong
+)
+
+const CastlingWhiteShortMask uint64 = 0x60
+const CastlingWhiteLongMask uint64 = 0xe
+const CastlingBlackShortMask uint64 = 0x6000000000000000
+const CastlingBlackLongMask uint64 = 0xe00000000000000
+
+var squaresWhiteLongCastling = []Square{C1, D1}
+var squaresWhiteShortCastling = []Square{F1, G1}
+var squaresBlackLongCastling = []Square{C8, D8}
+var squaresBlackShortCastling = []Square{F8, G8}
 
 const (
 	None Piece = iota
