@@ -1,17 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"nicarao/board"
 )
 
 func main() {
-	var test *board.Board = board.NewBoard()
-	test.WhiteToMove = true
-	/*test.Bitboards[true][board.Pawn] = board.SetBit(0, board.E2)
-	test.Bitboards[false][board.King] = board.SetBit(0, board.E8)
-	test.Bitboards[false][board.Pawn] = board.SetBit(0, board.D3)
-	test.Bitboards[true][board.King] = board.SetBit(0, board.G6)
-	test.Bitboards[true][board.Queen] = board.SetBit(0, board.A1)*/
-	test.ParseFEN(board.StartingPos)
+	var test board.Board = *board.NewBoard()
+	test.ParseFEN("k7/8/8/8/8/3ppp2/2p3p1/4K3 w - - 0 1")
 	test.Print()
+	//fmt.Println(len(test.GeneratePseudoMoves()))
+	fmt.Println(board.Perft(&test, 1))
+	//board.PrintBitboard(board.PawnBlackAttacksMasks[board.C6])
+	//board.PrintBitboard(board.PawnBlackAttacksMasks[board.H3])
 }

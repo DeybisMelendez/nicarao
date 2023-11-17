@@ -1,6 +1,8 @@
 package board
 
-import "math/bits"
+import (
+	"math/bits"
+)
 
 type Move struct {
 	Piece       Piece
@@ -8,7 +10,7 @@ type Move struct {
 	To          Square
 	Capture     Piece
 	Promotion   Piece
-	CastleRight uint8
+	CastleRight uint8 // El único propósito de esta variable es poder recuperar el dato en UnMakeMove
 }
 
 func (s *Board) MakeMove(move *Move) {
@@ -20,9 +22,8 @@ func (s *Board) MakeMove(move *Move) {
 		s.Bitboards[!color][move.Capture] = PopBit(capture, move.To)
 	}
 	if move.Promotion != None {
-		promotion := s.Bitboards[color][move.Promotion]
 		piece = PopBit(piece, move.To)
-		s.Bitboards[color][move.Promotion] = SetBit(promotion, move.To)
+		s.Bitboards[color][move.Promotion] = SetBit(s.Bitboards[color][move.Promotion], move.To)
 	}
 	if move.Piece == King {
 		s.HandleCastle(color, true, true)
@@ -57,7 +58,10 @@ func (s *Board) MakeMove(move *Move) {
 	}
 
 	s.Bitboards[color][move.Piece] = piece
-	s.WhiteToMove = !s.WhiteToMove
+	s.WhiteToMove = !color
+	s.friends = s.GetAll(!color)
+	s.enemies = s.GetAll(color)
+	s.occupied = s.friends | s.enemies
 }
 
 func (s *Board) UnMakeMove(move *Move) {
@@ -70,7 +74,8 @@ func (s *Board) UnMakeMove(move *Move) {
 		s.Bitboards[!color][move.Capture] = SetBit(capture, move.To)
 	}
 	if move.Promotion != None {
-		s.Bitboards[color][move.Promotion] |= PopBit(0, move.To)
+		s.Bitboards[color][move.Promotion] = PopBit(s.Bitboards[color][move.Promotion], move.To)
+		s.Bitboards[color][Pawn] = SetBit(s.Bitboards[!color][Pawn], move.From)
 	}
 
 	if move.Piece == King {
@@ -92,30 +97,33 @@ func (s *Board) UnMakeMove(move *Move) {
 
 	s.Bitboards[color][move.Piece] = piece
 	s.WhiteToMove = color
+	s.friends = s.GetAll(color)
+	s.enemies = s.GetAll(!color)
+	s.occupied = s.friends | s.enemies
 }
 
-func (board *Board) GenerateMoves() []Move {
+func (s *Board) GeneratePseudoMoves() []Move {
 	//TODO: Implementar captura al paso
 	var moves []Move
-	color := board.WhiteToMove
-	friends := board.GetAll(color)
-	enemies := board.GetAll(!color)
-	occupied := board.GetOccupied()
-	kingBB := board.Bitboards[color][King]
-
+	color := s.WhiteToMove
+	//s.friends = s.GetAll(color)
+	//s.enemies = s.GetAll(!color)
+	//s.occupied = s.friends | s.enemies
 	for _, piece := range pieceTypes {
-		pieceBoard := board.Bitboards[color][piece]
+		pieceBoard := s.Bitboards[color][piece]
 
 		for pieceBoard != 0 {
 			from := Square(bits.TrailingZeros64(pieceBoard))
-			attacks := board.GenerateAttacksForPiece(piece, from, occupied, friends, enemies)
-			if piece == Pawn {
-				attacks |= GetPawnPushes(color, from, occupied)
-			} else if piece == King {
+			attacks := s.GenerateAttacksForPiece(piece, from)
+			/*if piece == Pawn {
+				// No se añade en GenerateAttacksForPiece porque no es un ataque realmente
+				attacks |= s.GetPawnPushes(from)
+			} else */
+			if piece == King {
 				shortMask := CastlingBlackShortMask
 				longMask := CastlingBlackLongMask
-				shortRights := board.CanCastleShort(color)
-				longRights := board.CanCastleLong(color)
+				shortRights := s.CanCastleShort(color)
+				longRights := s.CanCastleLong(color)
 				shortSquares := squaresBlackShortCastling
 				longSquares := squaresBlackLongCastling
 				if color {
@@ -124,56 +132,27 @@ func (board *Board) GenerateMoves() []Move {
 					shortSquares = squaresWhiteShortCastling
 					longSquares = squaresWhiteLongCastling
 				}
-				kingsideOK := occupied&shortMask == 0 && shortRights && board.AnyUnderAttack(enemies, occupied, friends, shortSquares...)
-				queensideOK := occupied&longMask == 0 && longRights && board.AnyUnderAttack(enemies, occupied, friends, longSquares...)
+				kingsideOK := s.occupied&shortMask == 0 && shortRights && s.AnyUnderAttack(shortSquares...)
+				queensideOK := s.occupied&longMask == 0 && longRights && s.AnyUnderAttack(longSquares...)
 				if kingsideOK {
-					attacks |= SetBit(0, shortSquares[1])
-					/*move := Move{From: from, To: shortSquares[1], Piece: piece}
-					board.MakeMove(move)
-					if !board.IsUnderAttack(kingBB, enemies, occupied, friends) {
-						// TODO: Agregar una evaluación del movimiento
-						moves = append(moves, move)
-					}
-					board.UnMakeMove(move)*/
+					attacks = SetBit(attacks, shortSquares[1])
 				}
 				if queensideOK {
-					attacks |= SetBit(0, longSquares[0])
-					/*move := Move{From: from, To: longSquares[0], Piece: piece}
-					board.MakeMove(move)
-					if !board.IsUnderAttack(kingBB, enemies, occupied, friends) {
-						// TODO: Agregar una evaluación del movimiento
-						moves = append(moves, move)
-					}
-					board.UnMakeMove(move)*/
+					attacks = SetBit(attacks, longSquares[0])
 				}
 			}
 			for attacks != 0 {
 				to := Square(bits.TrailingZeros64(attacks))
-				capture := board.GetPiece(to, !board.WhiteToMove)
+				capture := s.GetPiece(to, !s.WhiteToMove)
 
 				if piece == Pawn && (to < A2 || to > H7) {
 					for _, promotion := range piecePromotions {
 						move := Move{From: from, To: to, Piece: piece, Capture: capture, Promotion: promotion}
-						board.MakeMove(&move)
-						board.WhiteToMove = color
-						if !board.IsUnderAttack(kingBB, enemies, occupied, friends) {
-							// TODO: Agregar una evaluación del movimiento
-							moves = append(moves, move)
-						}
-						board.WhiteToMove = !color
-						board.UnMakeMove(&move)
-
+						moves = append(moves, move)
 					}
 				} else {
 					move := Move{From: from, To: to, Piece: piece, Capture: capture}
-					board.MakeMove(&move)
-					board.WhiteToMove = color
-					if !board.IsUnderAttack(kingBB, enemies, occupied, friends) {
-						// TODO: Agregar una evaluación del movimiento
-						moves = append(moves, move)
-					}
-					board.WhiteToMove = !color
-					board.UnMakeMove(&move)
+					moves = append(moves, move)
 				}
 				attacks &= attacks - 1
 			}
@@ -181,4 +160,33 @@ func (board *Board) GenerateMoves() []Move {
 		}
 	}
 	return moves
+}
+
+/*func (s *Board) IsMoveLegal(move *Move) bool {
+	color := s.WhiteToMove
+	s.MakeMove(move)
+	kingBB := s.Bitboards[color][King]
+	s.WhiteToMove = color
+	s.friends = s.GetAll(!color)
+	s.enemies = s.GetAll(color)
+	var result bool
+	if !s.IsUnderAttack(kingBB) {
+		result = true
+	}
+	s.WhiteToMove = !color
+	s.UnMakeMove(move)
+	return result
+}*/
+func (s *Board) IsMoveLegal(move *Move) bool {
+
+	color := s.WhiteToMove
+	var temp Board = *s.CloneBoard()
+	temp.MakeMove(move)
+	kingBB := temp.Bitboards[color][King]
+	temp.WhiteToMove = !temp.WhiteToMove
+	temp.friends = temp.GetAll(!color)
+	temp.enemies = temp.GetAll(color)
+
+	// Verificar si la casilla a la que se mueve el rey está bajo ataque
+	return !temp.IsUnderAttack(kingBB)
 }

@@ -35,8 +35,22 @@ func (s *Board) ParseFEN(fen string) error {
 			file++
 		}
 	}
+	if len(parts) >= 5 {
+		castlingRights := parts[2]
+		s.ParseCastlingRights(castlingRights)
+	}
+	if parts[3] != "-" {
+		enpassantSquare := StringToSquare(parts[3])
+		if enpassantSquare != 64 {
+			s.Enpassant = enpassantSquare
+		}
+	}
+	s.friends = s.GetAll(s.WhiteToMove)
+	s.enemies = s.GetAll(!s.WhiteToMove)
+	s.occupied = s.GetOccupied()
 	return nil
 }
+
 func CharToPiece(char rune) Piece {
 	switch char {
 	case 'P':
@@ -90,4 +104,36 @@ func (s *Board) Print() {
 func PieceToChar(piece Piece) string {
 	pieceChars := ".PNBRQKpnbrqk"
 	return string(pieceChars[piece])
+}
+
+func (s *Board) ParseCastlingRights(rights string) {
+	for _, char := range rights {
+		switch char {
+		case 'K':
+			s.UpdateCastlingRights(CastlingWhiteShort)
+		case 'Q':
+			s.UpdateCastlingRights(CastlingWhiteLong)
+		case 'k':
+			s.UpdateCastlingRights(CastlingBlackShort)
+		case 'q':
+			s.UpdateCastlingRights(CastlingBlackLong)
+		}
+	}
+}
+func StringToSquare(s string) Square {
+	if len(s) != 2 {
+		return 64 // Indicar que la cadena no es válida
+	}
+
+	file := s[0]
+	rank := s[1]
+
+	if file < 'a' || file > 'h' || rank < '1' || rank > '8' {
+		return 64 // Indicar que la cadena no es válida
+	}
+
+	file -= 'a'
+	rank -= '1'
+
+	return Square(rank*8 + file)
 }
