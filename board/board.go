@@ -1,14 +1,31 @@
 package board
 
+//Board contiene todos los elementos necesarios para representar un tablero de ajedrez
 type Board struct {
-	WhiteToMove    bool
-	Bitboards      map[bool]map[Piece]uint64 // Mapa para almacenar bitboards por color y tipo de pieza
-	Enpassant      Square
-	CastlingRights uint8
-	Halfmoveclock  uint8
-	friends        uint64
-	enemies        uint64
-	occupied       uint64
+	//WhiteToMove indica el turno del jugador, true para blancas y false para negras
+	WhiteToMove bool
+	//Bitboards es un mapa que contiene un bitboard por cada pieza de ajedrez en el tablero
+	Bitboards map[bool]map[Piece]uint64
+	//Enpassant indica la casilla donde la captura al paso puede suceder,
+	//su estado es 0 cuando no existe captura al paso
+	Enpassant Square
+	//Castling indica el derecho a enrocar de cada bando,
+	//guarda 1 byte por cada derecho de enroque,
+	//largo, corto, para blancas o negras
+	Castling uint8
+	//HalfmoveClock es un contador de movimientos que se resetea cuando
+	//se realiza un movimiento de peón o captura,
+	//sirve para aplicar la regla de los 50 movimientos
+	HalfmoveClock uint8
+	//friends es un bitboard útil para calcular movimientos posibles,
+	//se debe actualizar al realizar un movimiento nuevo
+	friends uint64
+	//enemies es un bitboard útil para calcular movimientos posibles,
+	//se debe actualizar al realizar un movimiento nuevo
+	enemies uint64
+	//occupied es un bitboard útil para calcular movimientos posibles,
+	//se debe actualizar al realizar un movimiento nuevo
+	occupied uint64
 }
 
 func NewBoard() *Board {
@@ -35,10 +52,10 @@ func NewBoard() *Board {
 }
 func (s *Board) CloneBoard() *Board {
 	clonedBoard := &Board{
-		WhiteToMove:    s.WhiteToMove,
-		Enpassant:      s.Enpassant,
-		CastlingRights: s.CastlingRights,
-		Halfmoveclock:  s.Halfmoveclock,
+		WhiteToMove:   s.WhiteToMove,
+		Enpassant:     s.Enpassant,
+		Castling:      s.Castling,
+		HalfmoveClock: s.HalfmoveClock,
 	}
 
 	// Copiar bitboards
@@ -52,14 +69,9 @@ func (s *Board) CloneBoard() *Board {
 
 	return clonedBoard
 }
-func (s *Board) GetOccupied() uint64 {
-	return s.Bitboards[White][Pawn] | s.Bitboards[White][Bishop] | s.Bitboards[White][Knight] |
-		s.Bitboards[White][Rook] | s.Bitboards[White][Queen] | s.Bitboards[White][King] |
-		s.Bitboards[Black][Pawn] | s.Bitboards[Black][Bishop] | s.Bitboards[Black][Knight] |
-		s.Bitboards[Black][Rook] | s.Bitboards[Black][Queen] | s.Bitboards[Black][King]
-}
+
+//GetAll devuelve un bitboard con todas las casillas ocupadas del jugador indicado
 func (s *Board) GetAll(color bool) uint64 {
-	//var pieceTypes = []Piece{Pawn, Bishop, Knight, Rook, Queen, King}
 	var total uint64
 	for _, piece := range pieceTypes {
 		total |= s.Bitboards[color][piece]
@@ -67,6 +79,7 @@ func (s *Board) GetAll(color bool) uint64 {
 	return total
 }
 
+//GetPiece devuelve la pieza que está controlando la casilla indicada
 func (s *Board) GetPiece(square Square, color bool) Piece {
 	var mask uint64 = SetBit(0, square)
 
@@ -78,48 +91,26 @@ func (s *Board) GetPiece(square Square, color bool) Piece {
 	return None
 }
 
-func (s *Board) CanCastleShort(isWhite bool) bool {
-	castleRight := CastlingWhiteShort
-	if !isWhite {
-		castleRight = CastlingBlackShort
-	}
-	return s.CastlingRights&castleRight != 0
+//CanCastle devuelve true si el jugador indicado tiene derecho a enrocar corto
+func (s *Board) CanCastle(color bool, isShort bool) bool {
+	return castling[color][isShort]&s.Castling != 0
 }
 
-func (s *Board) CanCastleLong(isWhite bool) bool {
-	castleRight := CastlingWhiteLong
-	if !isWhite {
-		castleRight = CastlingBlackLong
-	}
-	return s.CastlingRights&castleRight != 0
+//UpdateCastling cambia el derecho a enroque al nuevo estado
+func (s *Board) UpdateCastling(Castling uint8) {
+	s.Castling |= Castling
 }
 
-func (s *Board) UpdateCastlingRights(castleRight uint8) {
-	s.CastlingRights |= castleRight
+//RemoveCastling elimina un derecho de enroque según se indique
+func (s *Board) RemoveCastling(Castling uint8) {
+	s.Castling &= ^Castling
 }
 
-func (s *Board) RemoveCastlingRights(castleRight uint8) {
-	s.CastlingRights &= ^castleRight
-}
-
-func (s *Board) HandleCastle(isWhite bool, isShort bool, remove bool) {
-	var castle uint8
-	if isWhite {
-		if isShort {
-			castle = CastlingWhiteShort
-		} else {
-			castle = CastlingWhiteLong
-		}
-	} else {
-		if isShort {
-			castle = CastlingBlackShort
-		} else {
-			castle = CastlingBlackLong
-		}
-	}
+//HandleCastle controla la modificación del derecho a enroque
+func (s *Board) HandleCastle(color bool, isShort bool, remove bool) {
 	if remove {
-		s.RemoveCastlingRights(castle)
+		s.RemoveCastling(castling[color][isShort])
 	} else {
-		s.UpdateCastlingRights(castle)
+		s.UpdateCastling(castling[color][isShort])
 	}
 }

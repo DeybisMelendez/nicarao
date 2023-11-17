@@ -5,18 +5,18 @@ import (
 )
 
 type Move struct {
-	Piece       Piece
-	From        Square
-	To          Square
-	Capture     Piece
-	Promotion   Piece
-	CastleRight uint8 // El único propósito de esta variable es poder recuperar el dato en UnMakeMove
+	Piece     Piece  //Piece es la pieza que se moverá
+	From      Square //From es la ubicación de la pieza actualmente
+	To        Square //To es la ubicación a la que se dirige la pieza
+	Capture   Piece  //Capture es la pieza que se debería capturar ubicada en To
+	Promotion Piece  //Promotion es la pieza que se está coronando, en caso de ser un peón
+	Castling  uint8  // El único propósito de esta variable es poder recuperar el dato en UnMakeMove
 }
 
 func (s *Board) MakeMove(move *Move) {
-	color := s.WhiteToMove
-	piece := SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
-	move.CastleRight = s.CastlingRights
+	var color bool = s.WhiteToMove
+	var piece uint64 = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
+	move.Castling = s.Castling
 	if move.Capture != None {
 		s.Bitboards[!color][move.Capture] = PopBit(s.Bitboards[!color][move.Capture], move.To)
 	}
@@ -25,9 +25,9 @@ func (s *Board) MakeMove(move *Move) {
 		s.Bitboards[color][move.Promotion] = SetBit(s.Bitboards[color][move.Promotion], move.To)
 	}
 	if move.Piece == King {
-		s.HandleCastle(color, true, true)
-		s.HandleCastle(color, false, true)
-		dist := int(move.To) - int(move.From)
+		s.HandleCastle(color, CastleShort, true)
+		s.HandleCastle(color, CastleLong, true)
+		var dist int = int(move.To) - int(move.From)
 		if dist == 2 { // Enroque corto
 			if color {
 				s.Bitboards[color][Rook] = SetBit(PopBit(s.Bitboards[color][Rook], H1), F1)
@@ -44,14 +44,14 @@ func (s *Board) MakeMove(move *Move) {
 	}
 
 	if move.Piece == Rook {
-		if move.From == A1 || move.From == A8 {
-			if s.CanCastleLong(color) {
-				s.HandleCastle(color, false, true)
+		if s.CanCastle(color, CastleLong) {
+			if move.From == A1 || move.From == A8 {
+				s.HandleCastle(color, CastleLong, true)
 			}
 		}
-		if move.From == H1 || move.From == H8 {
-			if s.CanCastleShort(color) {
-				s.HandleCastle(color, true, true)
+		if s.CanCastle(color, CastleShort) {
+			if move.From == H1 || move.From == H8 {
+				s.HandleCastle(color, CastleShort, true)
 			}
 		}
 	}
@@ -64,9 +64,9 @@ func (s *Board) MakeMove(move *Move) {
 }
 
 func (s *Board) UnMakeMove(move *Move) {
-	color := !s.WhiteToMove
-	s.CastlingRights = move.CastleRight
-	piece := PopBit(SetBit(s.Bitboards[color][move.Piece], move.From), move.To)
+	var color bool = !s.WhiteToMove
+	s.Castling = move.Castling
+	var piece uint64 = PopBit(SetBit(s.Bitboards[color][move.Piece], move.From), move.To)
 
 	if move.Capture != None {
 		s.Bitboards[!color][move.Capture] = SetBit(s.Bitboards[!color][move.Capture], move.To)
@@ -103,54 +103,39 @@ func (s *Board) UnMakeMove(move *Move) {
 func (s *Board) GeneratePseudoMoves() []Move {
 	//TODO: Implementar captura al paso
 	var moves []Move
-	color := s.WhiteToMove
-	//s.friends = s.GetAll(color)
-	//s.enemies = s.GetAll(!color)
-	//s.occupied = s.friends | s.enemies
+	var color bool = s.WhiteToMove
 	for _, piece := range pieceTypes {
-		pieceBoard := s.Bitboards[color][piece]
+		var pieceBoard uint64 = s.Bitboards[color][piece]
 
 		for pieceBoard != 0 {
-			from := Square(bits.TrailingZeros64(pieceBoard))
-			attacks := s.GenerateAttacksForPiece(piece, from, s.WhiteToMove)
-			/*if piece == Pawn {
-				// No se añade en GenerateAttacksForPiece porque no es un ataque realmente
-				attacks |= s.GetPawnPushes(from)
-			} else */
+			var from Square = Square(bits.TrailingZeros64(pieceBoard))
+			var attacks uint64 = s.GenerateAttacksForPiece(piece, from, s.WhiteToMove)
 			if piece == King {
-				shortMask := CastlingBlackShortMask
-				longMask := CastlingBlackLongMask
-				shortRights := s.CanCastleShort(color)
-				longRights := s.CanCastleLong(color)
-				shortSquares := squaresBlackShortCastling
-				longSquares := squaresBlackLongCastling
-				if color {
-					shortMask = CastlingWhiteShortMask
-					longMask = CastlingWhiteLongMask
-					shortSquares = squaresWhiteShortCastling
-					longSquares = squaresWhiteLongCastling
-				}
-				kingsideOK := s.occupied&shortMask == 0 && shortRights && s.AnyUnderAttack(s.WhiteToMove, shortSquares...)
-				queensideOK := s.occupied&longMask == 0 && longRights && s.AnyUnderAttack(s.WhiteToMove, longSquares...)
+				var kingsideOK bool = s.occupied&castlingMask[color][CastleShort] == 0 &&
+					s.CanCastle(color, CastleShort) &&
+					s.AnyUnderAttack(s.WhiteToMove, castlingSquares[color][CastleShort]...)
+				var queensideOK bool = s.occupied&castlingMask[color][CastleLong] == 0 &&
+					s.CanCastle(color, CastleLong) &&
+					s.AnyUnderAttack(s.WhiteToMove, castlingSquares[color][CastleLong]...)
 				if kingsideOK {
-					attacks = SetBit(attacks, shortSquares[1])
+					attacks = SetBit(attacks, castlingSquares[color][CastleShort][1])
 				}
 				if queensideOK {
-					attacks = SetBit(attacks, longSquares[0])
+					attacks = SetBit(attacks, castlingSquares[color][CastleLong][0])
 				}
 			}
 			for attacks != 0 {
-				to := Square(bits.TrailingZeros64(attacks))
-				capture := s.GetPiece(to, !s.WhiteToMove)
+				var to Square = Square(bits.TrailingZeros64(attacks))
+				var capture Piece = s.GetPiece(to, !s.WhiteToMove)
 
 				if piece == Pawn && (to < A2 || to > H7) {
 					for _, promotion := range piecePromotions {
-						move := Move{From: from, To: to, Piece: piece, Capture: capture, Promotion: promotion}
-						moves = append(moves, move)
+						moves = append(moves, Move{From: from, To: to, Piece: piece,
+							Capture: capture, Promotion: promotion})
 					}
 				} else {
-					move := Move{From: from, To: to, Piece: piece, Capture: capture}
-					moves = append(moves, move)
+					moves = append(moves, Move{From: from, To: to,
+						Piece: piece, Capture: capture})
 				}
 				attacks &= attacks - 1
 			}
@@ -161,9 +146,9 @@ func (s *Board) GeneratePseudoMoves() []Move {
 }
 
 func (s *Board) IsMoveLegal(move *Move) bool {
-	color := s.WhiteToMove
+	var color bool = s.WhiteToMove
 	s.MakeMove(move)
-	kingBB := s.Bitboards[color][King]
+	var kingBB uint64 = s.Bitboards[color][King]
 	var result bool
 	if !s.IsUnderAttack(kingBB, !color) {
 		result = true
@@ -171,25 +156,3 @@ func (s *Board) IsMoveLegal(move *Move) bool {
 	s.UnMakeMove(move)
 	return result
 }
-
-/*func (s *Board) IsMoveLegal(move *Move) bool {
-
-	//color := s.WhiteToMove
-	var temp Board = *s.CloneBoard()
-	temp.MakeMove(move)
-	temp.WhiteToMove = !temp.WhiteToMove
-	enemies := temp.enemies
-	temp.enemies = temp.friends
-	temp.friends = enemies
-	fmt.Println(temp.WhiteToMove)
-	PrintBitboard(temp.friends)
-	PrintBitboard(temp.enemies)
-	kingBB := temp.Bitboards[!temp.WhiteToMove][King]
-	//temp.WhiteToMove = color
-	//temp.friends = temp.GetAll(color)
-	//temp.enemies = temp.GetAll(!color)
-
-	// Verificar si la casilla a la que se mueve el rey está bajo ataque
-	return !temp.IsUnderAttack(kingBB)
-}
-*/

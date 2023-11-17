@@ -5,6 +5,7 @@ import (
 )
 
 func TestStartingPos(t *testing.T) {
+	Init()
 	var board Board = *NewBoard()
 	board.ParseFEN(StartingPos)
 
@@ -31,12 +32,12 @@ func TestStartingPos(t *testing.T) {
 }
 
 func TestPromotions(t *testing.T) {
+	Init()
 	type testCase struct {
 		solution int64
 		fen      string
 		test     string
 	}
-
 	testCases := []testCase{
 		{4, "7k/P7/8/8/8/6pp/6np/6nK w - - 0 1", "Promote 1 Pawn White"},
 		{32, "8/PPPPPPPP/8/8/8/8/1rr5/K1k5 w - - 0 1", "Promote 8 Pawn White"},
@@ -53,7 +54,7 @@ func TestPromotions(t *testing.T) {
 	}
 }
 func TestMoves(t *testing.T) {
-
+	Init()
 	type testCase struct {
 		nodesCount int64
 		solution   int64

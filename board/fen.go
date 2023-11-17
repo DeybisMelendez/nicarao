@@ -37,17 +37,17 @@ func (s *Board) ParseFEN(fen string) error {
 	}
 	if len(parts) >= 5 {
 		castlingRights := parts[2]
-		s.ParseCastlingRights(castlingRights)
+		s.ParseCastling(castlingRights)
 	}
 	if parts[3] != "-" {
-		enpassantSquare := StringToSquare(parts[3])
+		enpassantSquare, _ := StringToSquare(parts[3])
 		if enpassantSquare != 64 {
 			s.Enpassant = enpassantSquare
 		}
 	}
 	s.friends = s.GetAll(s.WhiteToMove)
 	s.enemies = s.GetAll(!s.WhiteToMove)
-	s.occupied = s.GetOccupied()
+	s.occupied = s.friends | s.enemies
 	return nil
 }
 
@@ -83,57 +83,90 @@ func CharToPiece(char rune) Piece {
 }
 
 func (s *Board) Print() {
-	fmt.Printf("   a b c d e f g h\n")
-	for rank := Square(7); rank < 8; rank-- {
-		fmt.Printf("%d  ", rank+1)
-		for file := Square(0); file < 8; file++ {
-			var square Square = rank*8 + file
-			piece := s.GetPiece(square, White)
+	fmt.Printf("  a b c d e f g h\n")
+	for rank := 7; rank >= 0; rank-- {
+		fmt.Printf("%d ", rank+1)
+		for file := 0; file < 8; file++ {
+			square := rank*8 + file
+			piece := s.GetPiece(Square(square), White)
 			if piece == None {
-				piece = s.GetPiece(square, Black)
-				if piece != None {
-					piece += 6
-				}
+				piece = s.GetPiece(Square(square), Black)
+				fmt.Printf("%s ", pieceToEmoji(piece))
+			} else {
+				fmt.Printf("%s ", pieceToEmoji(piece+6))
 			}
-			fmt.Printf("%s ", PieceToChar(piece))
 		}
 		fmt.Printf("\n")
 	}
 	fmt.Printf("\n")
 }
 func PieceToChar(piece Piece) string {
-	pieceChars := ".PNBRQKpnbrqk"
+	pieceChars := ".PNBRQK"
 	return string(pieceChars[piece])
 }
 
-func (s *Board) ParseCastlingRights(rights string) {
+func (s *Board) ParseCastling(rights string) {
 	for _, char := range rights {
 		switch char {
 		case 'K':
-			s.UpdateCastlingRights(CastlingWhiteShort)
+			s.UpdateCastling(castling[White][CastleShort])
 		case 'Q':
-			s.UpdateCastlingRights(CastlingWhiteLong)
+			s.UpdateCastling(castling[White][CastleLong])
 		case 'k':
-			s.UpdateCastlingRights(CastlingBlackShort)
+			s.UpdateCastling(castling[Black][CastleShort])
 		case 'q':
-			s.UpdateCastlingRights(CastlingBlackLong)
+			s.UpdateCastling(castling[Black][CastleLong])
 		}
 	}
 }
-func StringToSquare(s string) Square {
+
+func pieceToEmoji(piece Piece) string {
+	switch piece {
+	case Pawn + 6:
+		return "\u265F"
+	case Knight + 6:
+		return "\u265E"
+	case Bishop + 6:
+		return "\u265D"
+	case Rook + 6:
+		return "\u265C"
+	case Queen + 6:
+		return "\u265B"
+	case King + 6:
+		return "\u265A"
+	case Pawn:
+		return "\u2659"
+	case Knight:
+		return "\u2658"
+	case Bishop:
+		return "\u2657"
+	case Rook:
+		return "\u2656"
+	case Queen:
+		return "\u2655"
+	case King:
+		return "\u2654"
+	case None:
+		return "."
+	default:
+		return "?" // Espacio para casillas vacías
+	}
+}
+
+func StringToSquare(s string) (Square, error) {
 	if len(s) != 2 {
-		return 64 // Indicar que la cadena no es válida
+		return 0, fmt.Errorf("string is invalid: %s", s)
 	}
 
 	file := s[0]
 	rank := s[1]
 
 	if file < 'a' || file > 'h' || rank < '1' || rank > '8' {
-		return 64 // Indicar que la cadena no es válida
+		return 0, fmt.Errorf("string is invalid: %s", s)
 	}
 
 	file -= 'a'
 	rank -= '1'
 
-	return Square(rank*8 + file)
+	return Square(rank*8 + file), nil
 }

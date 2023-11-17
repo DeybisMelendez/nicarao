@@ -6,30 +6,28 @@ import (
 
 func (s *Board) GetBishopAttacks(square Square, color bool) uint64 {
 	var attacks uint64
+	var blockerIndex Square
 	attacks |= Rays["northWest"][square]
 	if Rays["northWest"][square]&s.occupied != 0 {
-		var blockerIndex = Square(bits.TrailingZeros64(Rays["northWest"][square] & s.occupied))
+		blockerIndex = Square(bits.TrailingZeros64(Rays["northWest"][square] & s.occupied))
 		attacks &= ^Rays["northWest"][blockerIndex]
 	}
 	attacks |= Rays["northEast"][square]
 	if Rays["northEast"][square]&s.occupied != 0 {
-		var blockerIndex = Square(bits.TrailingZeros64(Rays["northEast"][square] & s.occupied))
+		blockerIndex = Square(bits.TrailingZeros64(Rays["northEast"][square] & s.occupied))
 		attacks &= ^Rays["northEast"][blockerIndex]
 	}
 	attacks |= Rays["southWest"][square]
 	if Rays["southWest"][square]&s.occupied != 0 {
-		var blockerIndex = 63 - Square(bits.LeadingZeros64(Rays["southWest"][square]&s.occupied))
+		blockerIndex = 63 - Square(bits.LeadingZeros64(Rays["southWest"][square]&s.occupied))
 		attacks &= ^Rays["southWest"][blockerIndex]
 	}
 	attacks |= Rays["southEast"][square]
 	if Rays["southEast"][square]&s.occupied != 0 {
-		var blockerIndex = 63 - Square(bits.LeadingZeros64(Rays["southEast"][square]&s.occupied))
+		blockerIndex = 63 - Square(bits.LeadingZeros64(Rays["southEast"][square]&s.occupied))
 		attacks &= ^Rays["southEast"][blockerIndex]
 	}
-	if color == s.WhiteToMove {
-		return attacks & ^s.friends
-	}
-	return attacks & ^s.enemies
+	return s.filterAttacks(attacks, color)
 }
 func (s *Board) GetRookAttacks(square Square, color bool) uint64 {
 	var attacks uint64
@@ -53,26 +51,15 @@ func (s *Board) GetRookAttacks(square Square, color bool) uint64 {
 		var blockerIndex = 63 - Square(bits.LeadingZeros64(Rays["west"][square]&s.occupied))
 		attacks &= ^Rays["west"][blockerIndex]
 	}
-	if color == s.WhiteToMove {
-		return attacks & ^s.friends
-	}
-	return attacks & ^s.enemies
+	return s.filterAttacks(attacks, color)
 }
 
 func (s *Board) GetKnightAttacks(square Square, color bool) uint64 {
-	//return KnightMasks[square] & ^s.friends
-	if color == s.WhiteToMove {
-		return KnightMasks[square] & ^s.friends
-	}
-	return KnightMasks[square] & ^s.enemies
+	return s.filterAttacks(KnightMasks[square], color)
 }
 
 func (s *Board) GetKingAttacks(square Square, color bool) uint64 {
-	//return KingMasks[square] & ^s.friends
-	if color == s.WhiteToMove {
-		return KingMasks[square] & ^s.friends
-	}
-	return KingMasks[square] & ^s.enemies
+	return s.filterAttacks(KingMasks[square], color)
 }
 
 func (s *Board) GetPawnPushes(square Square, color bool) uint64 {
@@ -107,7 +94,6 @@ func (s *Board) GetPawnAttacks(square Square, color bool) uint64 {
 }
 
 func (s *Board) GenerateAttacksForPiece(piece Piece, from Square, color bool) uint64 {
-	//var attacks uint64
 
 	switch piece {
 	case Pawn:
@@ -129,15 +115,11 @@ func (s *Board) GenerateAttacksForPiece(piece Piece, from Square, color bool) ui
 func (s *Board) IsUnderAttack(pieceBB uint64, color bool) bool {
 
 	for _, piece := range pieceTypes {
-		/*if piece == King {
-			continue
-		}*/
 
-		attackerBB := s.Bitboards[color][piece]
+		var attackerBB uint64 = s.Bitboards[color][piece]
 		for attackerBB != 0 {
-			from := Square(bits.TrailingZeros64(attackerBB))
-			attacks := s.GenerateAttacksForPiece(piece, from, color)
-			//PrintBitboard(attacks)
+			var from Square = Square(bits.TrailingZeros64(attackerBB))
+			var attacks uint64 = s.GenerateAttacksForPiece(piece, from, color)
 			if attacks&pieceBB != 0 {
 				return true
 			}
@@ -148,10 +130,16 @@ func (s *Board) IsUnderAttack(pieceBB uint64, color bool) bool {
 }
 func (s *Board) AnyUnderAttack(color bool, squares ...Square) bool {
 	for _, square := range squares {
-		pieceBB := SetBit(0, square)
+		var pieceBB uint64 = SetBit(0, square)
 		if s.IsUnderAttack(pieceBB, color) {
 			return true
 		}
 	}
 	return false
+}
+func (s *Board) filterAttacks(attacks uint64, color bool) uint64 {
+	if color == s.WhiteToMove {
+		return attacks & ^s.friends
+	}
+	return attacks & ^s.enemies
 }

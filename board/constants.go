@@ -3,27 +3,31 @@ package board
 type Square uint8
 type Piece uint8
 
+func Init() {
+	castling = map[bool]map[bool]uint8{
+		White: {CastleShort: 2, CastleLong: 8},
+		Black: {CastleShort: 1, CastleLong: 4},
+	}
+	castlingMask = map[bool]map[bool]uint64{
+		White: {CastleShort: 0x60, CastleLong: 0xe},
+		Black: {CastleShort: 0x6000000000000000, CastleLong: 0xe00000000000000},
+	}
+	castlingSquares = map[bool]map[bool][]Square{
+		White: {CastleShort: {F1, G1}, CastleLong: {C1, D1}},
+		Black: {CastleShort: {F8, G8}, CastleLong: {C8, D8}},
+	}
+}
+
 var pieceTypes = []Piece{Pawn, Knight, Bishop, Rook, Queen, King}
 var piecePromotions = []Piece{Queen, Rook, Bishop, Knight}
+var castling map[bool]map[bool]uint8
+var castlingMask map[bool]map[bool]uint64
+var castlingSquares map[bool]map[bool][]Square
 
 const White bool = true
 const Black bool = false
-const (
-	CastlingBlackShort uint8 = 1 << iota
-	CastlingBlackLong
-	CastlingWhiteShort
-	CastlingWhiteLong
-)
-
-const CastlingWhiteShortMask uint64 = 0x60
-const CastlingWhiteLongMask uint64 = 0xe
-const CastlingBlackShortMask uint64 = 0x6000000000000000
-const CastlingBlackLongMask uint64 = 0xe00000000000000
-
-var squaresWhiteLongCastling = []Square{C1, D1}
-var squaresWhiteShortCastling = []Square{F1, G1}
-var squaresBlackLongCastling = []Square{C8, D8}
-var squaresBlackShortCastling = []Square{F8, G8}
+const CastleShort bool = true
+const CastleLong bool = false
 
 const (
 	None Piece = iota
