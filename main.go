@@ -7,10 +7,13 @@ import (
 
 func main() {
 	var test board.Board = *board.NewBoard()
-	test.ParseFEN("k7/8/8/8/8/3ppp2/2p3p1/4K3 w - - 0 1")
-	test.Print()
-	//fmt.Println(len(test.GeneratePseudoMoves()))
-	fmt.Println(board.Perft(&test, 1))
-	//board.PrintBitboard(board.PawnBlackAttacksMasks[board.C6])
-	//board.PrintBitboard(board.PawnBlackAttacksMasks[board.H3])
+	test.ParseFEN("k6K/rpbpnprp/P1P1P1P1/nppprpbn/1P1P1P1P/rqppqpbp/P1P1P1P1/8 w - - 0 1")
+	moves := test.GeneratePseudoMoves()
+	for _, move := range moves {
+		//if test.IsMoveLegal(&move) {
+		board.PrintBitboard(test.GenerateAttacksForPiece(board.Pawn, move.From, test.WhiteToMove))
+		fmt.Println(move.From, move.To, move.Capture)
+		fmt.Println("--------------------")
+		//}
+	}
 }

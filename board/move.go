@@ -18,8 +18,7 @@ func (s *Board) MakeMove(move *Move) {
 	piece := SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
 	move.CastleRight = s.CastlingRights
 	if move.Capture != None {
-		capture := s.Bitboards[!color][move.Capture]
-		s.Bitboards[!color][move.Capture] = PopBit(capture, move.To)
+		s.Bitboards[!color][move.Capture] = PopBit(s.Bitboards[!color][move.Capture], move.To)
 	}
 	if move.Promotion != None {
 		piece = PopBit(piece, move.To)
@@ -70,8 +69,7 @@ func (s *Board) UnMakeMove(move *Move) {
 	piece := PopBit(SetBit(s.Bitboards[color][move.Piece], move.From), move.To)
 
 	if move.Capture != None {
-		capture := s.Bitboards[!color][move.Capture]
-		s.Bitboards[!color][move.Capture] = SetBit(capture, move.To)
+		s.Bitboards[!color][move.Capture] = SetBit(s.Bitboards[!color][move.Capture], move.To)
 	}
 	if move.Promotion != None {
 		s.Bitboards[color][move.Promotion] = PopBit(s.Bitboards[color][move.Promotion], move.To)
@@ -114,7 +112,7 @@ func (s *Board) GeneratePseudoMoves() []Move {
 
 		for pieceBoard != 0 {
 			from := Square(bits.TrailingZeros64(pieceBoard))
-			attacks := s.GenerateAttacksForPiece(piece, from)
+			attacks := s.GenerateAttacksForPiece(piece, from, s.WhiteToMove)
 			/*if piece == Pawn {
 				// No se añade en GenerateAttacksForPiece porque no es un ataque realmente
 				attacks |= s.GetPawnPushes(from)
@@ -132,8 +130,8 @@ func (s *Board) GeneratePseudoMoves() []Move {
 					shortSquares = squaresWhiteShortCastling
 					longSquares = squaresWhiteLongCastling
 				}
-				kingsideOK := s.occupied&shortMask == 0 && shortRights && s.AnyUnderAttack(shortSquares...)
-				queensideOK := s.occupied&longMask == 0 && longRights && s.AnyUnderAttack(longSquares...)
+				kingsideOK := s.occupied&shortMask == 0 && shortRights && s.AnyUnderAttack(s.WhiteToMove, shortSquares...)
+				queensideOK := s.occupied&longMask == 0 && longRights && s.AnyUnderAttack(s.WhiteToMove, longSquares...)
 				if kingsideOK {
 					attacks = SetBit(attacks, shortSquares[1])
 				}
@@ -162,31 +160,36 @@ func (s *Board) GeneratePseudoMoves() []Move {
 	return moves
 }
 
-/*func (s *Board) IsMoveLegal(move *Move) bool {
+func (s *Board) IsMoveLegal(move *Move) bool {
 	color := s.WhiteToMove
 	s.MakeMove(move)
 	kingBB := s.Bitboards[color][King]
-	s.WhiteToMove = color
-	s.friends = s.GetAll(!color)
-	s.enemies = s.GetAll(color)
 	var result bool
-	if !s.IsUnderAttack(kingBB) {
+	if !s.IsUnderAttack(kingBB, !color) {
 		result = true
 	}
-	s.WhiteToMove = !color
 	s.UnMakeMove(move)
 	return result
-}*/
-func (s *Board) IsMoveLegal(move *Move) bool {
+}
 
-	color := s.WhiteToMove
+/*func (s *Board) IsMoveLegal(move *Move) bool {
+
+	//color := s.WhiteToMove
 	var temp Board = *s.CloneBoard()
 	temp.MakeMove(move)
-	kingBB := temp.Bitboards[color][King]
 	temp.WhiteToMove = !temp.WhiteToMove
-	temp.friends = temp.GetAll(!color)
-	temp.enemies = temp.GetAll(color)
+	enemies := temp.enemies
+	temp.enemies = temp.friends
+	temp.friends = enemies
+	fmt.Println(temp.WhiteToMove)
+	PrintBitboard(temp.friends)
+	PrintBitboard(temp.enemies)
+	kingBB := temp.Bitboards[!temp.WhiteToMove][King]
+	//temp.WhiteToMove = color
+	//temp.friends = temp.GetAll(color)
+	//temp.enemies = temp.GetAll(!color)
 
 	// Verificar si la casilla a la que se mueve el rey está bajo ataque
 	return !temp.IsUnderAttack(kingBB)
 }
+*/

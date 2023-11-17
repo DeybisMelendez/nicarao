@@ -59,7 +59,7 @@ func (s *Board) GetOccupied() uint64 {
 		s.Bitboards[Black][Rook] | s.Bitboards[Black][Queen] | s.Bitboards[Black][King]
 }
 func (s *Board) GetAll(color bool) uint64 {
-	var pieceTypes = []Piece{Pawn, Bishop, Knight, Rook, Queen, King}
+	//var pieceTypes = []Piece{Pawn, Bishop, Knight, Rook, Queen, King}
 	var total uint64
 	for _, piece := range pieceTypes {
 		total |= s.Bitboards[color][piece]
