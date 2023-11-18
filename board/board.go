@@ -29,6 +29,7 @@ type Board struct {
 }
 
 func NewBoard() *Board {
+	//Init()
 	return &Board{
 		Bitboards: map[bool]map[Piece]uint64{
 			White: {

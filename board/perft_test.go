@@ -5,7 +5,7 @@ import (
 )
 
 func TestStartingPos(t *testing.T) {
-	Init()
+	//Init()
 	var board Board = *NewBoard()
 	board.ParseFEN(StartingPos)
 
@@ -15,46 +15,51 @@ func TestStartingPos(t *testing.T) {
 	}
 
 	testCases := []testCase{
-		{1, 20},     // Nodos en profundidad 1
-		{2, 400},    // Nodos en profundidad 2
-		{3, 8902},   // Nodos en profundidad 3
-		{4, 197281}, // Nodos en profundidad 4
-		//{5, 4865609}, // Nodos en profundidad 5
-		// Agrega más casos de prueba según sea necesario...
+		{1, 20},      // Nodos en profundidad 1
+		{2, 400},     // Nodos en profundidad 2
+		{3, 8902},    // Nodos en profundidad 3
+		{4, 197281},  // Nodos en profundidad 4
+		{5, 4865609}, // Nodos en profundidad 5 14 segundos
+		//{6, 119060324}, // Nodos en profundidad 6 Nota: Demasiado lento para llegar al nodo 6
 	}
 
 	for _, tc := range testCases {
 		count := Perft(&board, tc.depth)
 		if count != tc.nodesCount {
-			t.Errorf("Para profundidad %d, se esperaban %d nodos, pero se encontraron %d nodos", tc.depth, tc.nodesCount, count)
+			t.Errorf("Profundidad: %d, Solución: %d nodos, Resultado: %d nodos", tc.depth, tc.nodesCount, count)
 		}
 	}
 }
 
-func TestPromotions(t *testing.T) {
-	Init()
+func TestKiwipete(t *testing.T) {
+	//Init()
+	var board Board = *NewBoard()
+	board.ParseFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ")
+
 	type testCase struct {
-		solution int64
-		fen      string
-		test     string
+		depth      int
+		nodesCount int64
 	}
+
 	testCases := []testCase{
-		{4, "7k/P7/8/8/8/6pp/6np/6nK w - - 0 1", "Promote 1 Pawn White"},
-		{32, "8/PPPPPPPP/8/8/8/8/1rr5/K1k5 w - - 0 1", "Promote 8 Pawn White"},
-		{32, "5K1k/5RR1/8/8/8/8/pppppppp/8 b - - 0 1", "Promote 8 Pawn Black"},
+		{1, 48},   // Nodos en profundidad 1
+		{2, 2039}, // Nodos en profundidad 2
+		//{3, 97862},   // Nodos en profundidad 3
+		//{4, 4085603}, // Nodos en profundidad 4
+		//{5, 193690690}, // Nodos en profundidad 5
+		//{6, 8031647685}, // Nodos en profundidad 6
 	}
 
 	for _, tc := range testCases {
-		var board Board = *NewBoard()
-		board.ParseFEN(tc.fen)
-		var count int64 = Perft(&board, 1)
-		if tc.solution != count {
-			t.Errorf("Prueba de coronación: %s, nodos esperados: %d, %d nodos encontrados", tc.test, tc.solution, count)
+		count := Perft(&board, tc.depth)
+		if count != tc.nodesCount {
+			t.Errorf("Profundidad: %d, Solución: %d nodos, Resultado: %d nodos", tc.depth, tc.nodesCount, count)
 		}
 	}
 }
+
 func TestMoves(t *testing.T) {
-	Init()
+	//Init()
 	type testCase struct {
 		nodesCount int64
 		solution   int64
@@ -63,6 +68,9 @@ func TestMoves(t *testing.T) {
 	}
 
 	testCases := []testCase{
+		{1, 4, "7k/P7/8/8/8/6pp/6np/6nK w - - 0 1", "Promoción 1 Peón"},
+		{1, 32, "8/PPPPPPPP/8/8/8/8/1rr5/K1k5 w - - 0 1", "Coronación de 8 peones Blancas"},
+		{1, 32, "5K1k/5RR1/8/8/8/8/pppppppp/8 b - - 0 1", "Coronación de 8 peones Negras"},
 		{1, 0, "8/8/3bb3/2b5/4K3/8/4b3/k7 w - - 0 1", "Ahogado solo Alfiles"},
 		{1, 0, "8/8/3r1r2/4K3/3r1r2/8/8/k7 w - - 0 1", "Ahogado solo Torres"},
 		{1, 0, "8/8/3q4/8/4K3/8/5q2/k7 w - - 0 1", "Ahogado solo Damas"},
@@ -83,6 +91,9 @@ func TestMoves(t *testing.T) {
 		{1, 4, "4k3/8/8/8/8/2b5/3N4/4K3 w - - 0 1", "Pieza clavada"},
 		{1, 6, "4k3/8/8/b7/1P6/8/8/4K3 w - - 0 1", "Peón clavado con captura"},
 		{1, 15, "k3r3/1b5b/2B1P1P1/8/rqR1K1Br/8/2R1P1R1/1q2r2q w - - 0 1", "Muchas clavadas"},
+		{1, 2, "k7/8/8/4pP2/8/8/1rr5/K7 w - e6 0 2", "Captura al paso Blancas"},
+		{1, 2, "k7/1R6/1R6/8/4Pp2/8/8/K7 b - e3 0 1", "Captura al paso Negras"},
+		{1, 4, "k7/8/8/4PpP1/8/1r6/1r6/K7 w - f6 0 2", "2 Capturas al paso"},
 	}
 
 	for _, tc := range testCases {

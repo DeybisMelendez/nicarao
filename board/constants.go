@@ -3,7 +3,7 @@ package board
 type Square uint8
 type Piece uint8
 
-func Init() {
+func init() {
 	castling = map[bool]map[bool]uint8{
 		White: {CastleShort: 2, CastleLong: 8},
 		Black: {CastleShort: 1, CastleLong: 4},
@@ -28,6 +28,7 @@ const White bool = true
 const Black bool = false
 const CastleShort bool = true
 const CastleLong bool = false
+const StartingPos string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 //const everything uint64 = ^(uint64(0))
 const (

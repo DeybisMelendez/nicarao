@@ -5,8 +5,6 @@ import (
 	"strings"
 )
 
-const StartingPos string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-
 func (s *Board) ParseFEN(fen string) error {
 	parts := strings.Fields(fen)
 	if len(parts) < 4 {
@@ -18,8 +16,6 @@ func (s *Board) ParseFEN(fen string) error {
 		s.WhiteToMove = true
 	} else if parts[1] == "b" {
 		s.WhiteToMove = false
-	} else {
-		return fmt.Errorf("error: FEN string is invalid, %s", fen)
 	}
 
 	for _, char := range parts[0] {
@@ -35,7 +31,7 @@ func (s *Board) ParseFEN(fen string) error {
 			file++
 		}
 	}
-	if len(parts) >= 5 {
+	if parts[2] != "-" {
 		castlingRights := parts[2]
 		s.ParseCastling(castlingRights)
 	}

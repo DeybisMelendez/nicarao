@@ -10,7 +10,7 @@ type Move struct {
 	To        Square //To es la ubicación a la que se dirige la pieza
 	Capture   Piece  //Capture es la pieza que se debería capturar ubicada en To
 	Promotion Piece  //Promotion es la pieza que se está coronando, en caso de ser un peón
-	//Enpassant Square //Enpassant registra la casilla donde la captura al paso es posible
+	Enpassant Square //Enpassant registra la casilla donde la captura al paso es posible
 	//Castling  uint8  // El único propósito de esta variable es poder recuperar el dato en UnMakeMove
 }
 
@@ -25,6 +25,7 @@ type UnMove struct {
 	PromotionPawn uint64
 	CastleRook    uint64
 	Enpassant     Square
+	EnpassantBB   uint64
 	Castling      uint8
 	Friends       uint64
 	Enemies       uint64
@@ -34,14 +35,16 @@ type UnMove struct {
 func (s *Board) MakeMove(move *Move) *UnMove {
 	var color bool = s.WhiteToMove
 	var unMove UnMove = UnMove{
-		Piece:    move.Piece,
-		PieceBB:  s.Bitboards[color][move.Piece],
-		Friends:  s.friends,
-		Enemies:  s.enemies,
-		Occupied: s.occupied,
+		Piece:     move.Piece,
+		PieceBB:   s.Bitboards[color][move.Piece],
+		Friends:   s.friends,
+		Enemies:   s.enemies,
+		Occupied:  s.occupied,
+		Enpassant: s.Enpassant,
 	}
 
 	var piece uint64 = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
+
 	//move.Castling = s.Castling
 	if move.Capture != None {
 		unMove.Capture = move.Capture
@@ -56,14 +59,15 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 		piece = PopBit(piece, move.To)
 		s.Bitboards[color][move.Promotion] = SetBit(s.Bitboards[color][move.Promotion], move.To)
 	}
-	/*if move.Piece == Pawn && s.Enpassant == move.To && s.Enpassant != 0 {
-		unMove.Enpassant = s.Enpassant
+	if move.Piece == Pawn && s.Enpassant == move.To {
+		//unMove.Enpassant = s.Enpassant
+		unMove.EnpassantBB = s.Bitboards[!color][Pawn]
 		if color {
 			s.Bitboards[!color][Pawn] = PopBit(s.Bitboards[!color][Pawn], move.To-8)
 		} else {
 			s.Bitboards[!color][Pawn] = PopBit(s.Bitboards[!color][Pawn], move.To+8)
 		}
-	}*/
+	}
 	if move.Piece == King {
 		unMove.Castling = s.Castling
 		unMove.CastleRook = s.Bitboards[color][Rook]
@@ -100,6 +104,7 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 	}
 
 	s.Bitboards[color][move.Piece] = piece
+	s.Enpassant = move.Enpassant
 	s.WhiteToMove = !color
 	s.friends = s.GetAll(!color)
 	s.enemies = s.GetAll(color)
@@ -110,12 +115,16 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 func (s *Board) UnMakeMove(move *UnMove) {
 	var color bool = !s.WhiteToMove
 	s.Bitboards[color][move.Piece] = move.PieceBB
+	s.Enpassant = move.Enpassant
 	if move.Capture != None {
 		s.Bitboards[!color][move.Capture] = move.CaptureBB
 	}
 	if move.Promotion != None {
 		s.Bitboards[color][move.Promotion] = move.PromotionBB
 		s.Bitboards[color][Pawn] = move.PromotionPawn
+	}
+	if move.Piece == Pawn && move.EnpassantBB != 0 {
+		s.Bitboards[!color][Pawn] = move.EnpassantBB
 	}
 	if move.Piece == King {
 		s.Castling = move.Castling
@@ -156,11 +165,24 @@ func (s *Board) GeneratePseudoMoves() []Move {
 			for attacks != 0 {
 				var to Square = Square(bits.TrailingZeros64(attacks))
 				var capture Piece = s.GetPiece(to, !s.WhiteToMove)
-
-				if piece == Pawn && (to < A2 || to > H7) {
-					for _, promotion := range piecePromotions {
-						moves = append(moves, Move{From: from, To: to, Piece: piece,
-							Capture: capture, Promotion: promotion})
+				if piece == Pawn {
+					if to < A2 || to > H7 { //Promotion
+						for _, promotion := range piecePromotions {
+							moves = append(moves, Move{From: from, To: to, Piece: piece,
+								Capture: capture, Promotion: promotion})
+						}
+					} else if color && to-from == 16 { //Enpassant White
+						moves = append(moves, Move{From: from, To: to,
+							Piece: piece, Enpassant: from + 8})
+					} else if !color && from-to == 16 { //Enpassant Black
+						moves = append(moves, Move{From: from, To: to,
+							Piece: piece, Enpassant: from - 8})
+					} else if s.Enpassant != 0 && s.Enpassant == to { //Enpassant Capture
+						moves = append(moves, Move{From: from, To: to,
+							Piece: piece, Capture: capture})
+					} else {
+						moves = append(moves, Move{From: from, To: to, //Pawn move
+							Piece: piece, Capture: capture})
 					}
 				} else {
 					moves = append(moves, Move{From: from, To: to,
