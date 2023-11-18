@@ -29,6 +29,7 @@ const Black bool = false
 const CastleShort bool = true
 const CastleLong bool = false
 
+//const everything uint64 = ^(uint64(0))
 const (
 	None Piece = iota
 	Pawn

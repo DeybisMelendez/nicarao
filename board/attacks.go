@@ -82,10 +82,14 @@ func (s *Board) GetPawnPushes(square Square, color bool) uint64 {
 }
 func (s *Board) GetPawnAttacks(square Square, color bool) uint64 {
 	var mask uint64
+	/*var enPassantMask uint64
+	if s.Enpassant != 0 {
+		enPassantMask = SetBit(0, s.Enpassant)
+	}*/
 	if color {
-		mask = PawnWhiteAttackMasks[square]
+		mask |= PawnWhiteAttackMasks[square]
 	} else {
-		mask = PawnBlackAttacksMasks[square]
+		mask |= PawnBlackAttacksMasks[square]
 	}
 	if color == s.WhiteToMove {
 		return mask & s.enemies

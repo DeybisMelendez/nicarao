@@ -10,21 +10,63 @@ type Move struct {
 	To        Square //To es la ubicación a la que se dirige la pieza
 	Capture   Piece  //Capture es la pieza que se debería capturar ubicada en To
 	Promotion Piece  //Promotion es la pieza que se está coronando, en caso de ser un peón
-	Castling  uint8  // El único propósito de esta variable es poder recuperar el dato en UnMakeMove
+	//Enpassant Square //Enpassant registra la casilla donde la captura al paso es posible
+	//Castling  uint8  // El único propósito de esta variable es poder recuperar el dato en UnMakeMove
 }
 
-func (s *Board) MakeMove(move *Move) {
+type UnMove struct {
+	//TODO: Intentar reducir el tamaño del struct al mínimo necesario
+	Piece         Piece
+	PieceBB       uint64
+	Capture       Piece
+	CaptureBB     uint64
+	Promotion     Piece
+	PromotionBB   uint64
+	PromotionPawn uint64
+	CastleRook    uint64
+	Enpassant     Square
+	Castling      uint8
+	Friends       uint64
+	Enemies       uint64
+	Occupied      uint64
+}
+
+func (s *Board) MakeMove(move *Move) *UnMove {
 	var color bool = s.WhiteToMove
+	var unMove UnMove = UnMove{
+		Piece:    move.Piece,
+		PieceBB:  s.Bitboards[color][move.Piece],
+		Friends:  s.friends,
+		Enemies:  s.enemies,
+		Occupied: s.occupied,
+	}
+
 	var piece uint64 = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
-	move.Castling = s.Castling
+	//move.Castling = s.Castling
 	if move.Capture != None {
+		unMove.Capture = move.Capture
+		unMove.CaptureBB = s.Bitboards[!color][move.Capture]
 		s.Bitboards[!color][move.Capture] = PopBit(s.Bitboards[!color][move.Capture], move.To)
 	}
 	if move.Promotion != None {
+		unMove.Promotion = move.Promotion
+		unMove.PromotionPawn = piece
+		unMove.PromotionBB = s.Bitboards[color][move.Promotion]
+
 		piece = PopBit(piece, move.To)
 		s.Bitboards[color][move.Promotion] = SetBit(s.Bitboards[color][move.Promotion], move.To)
 	}
+	/*if move.Piece == Pawn && s.Enpassant == move.To && s.Enpassant != 0 {
+		unMove.Enpassant = s.Enpassant
+		if color {
+			s.Bitboards[!color][Pawn] = PopBit(s.Bitboards[!color][Pawn], move.To-8)
+		} else {
+			s.Bitboards[!color][Pawn] = PopBit(s.Bitboards[!color][Pawn], move.To+8)
+		}
+	}*/
 	if move.Piece == King {
+		unMove.Castling = s.Castling
+		unMove.CastleRook = s.Bitboards[color][Rook]
 		s.HandleCastle(color, CastleShort, true)
 		s.HandleCastle(color, CastleLong, true)
 		var dist int = int(move.To) - int(move.From)
@@ -44,6 +86,7 @@ func (s *Board) MakeMove(move *Move) {
 	}
 
 	if move.Piece == Rook {
+		unMove.Castling = s.Castling
 		if s.CanCastle(color, CastleLong) {
 			if move.From == A1 || move.From == A8 {
 				s.HandleCastle(color, CastleLong, true)
@@ -61,43 +104,29 @@ func (s *Board) MakeMove(move *Move) {
 	s.friends = s.GetAll(!color)
 	s.enemies = s.GetAll(color)
 	s.occupied = s.friends | s.enemies
+	return &unMove
 }
 
-func (s *Board) UnMakeMove(move *Move) {
+func (s *Board) UnMakeMove(move *UnMove) {
 	var color bool = !s.WhiteToMove
-	s.Castling = move.Castling
-	var piece uint64 = PopBit(SetBit(s.Bitboards[color][move.Piece], move.From), move.To)
-
+	s.Bitboards[color][move.Piece] = move.PieceBB
 	if move.Capture != None {
-		s.Bitboards[!color][move.Capture] = SetBit(s.Bitboards[!color][move.Capture], move.To)
+		s.Bitboards[!color][move.Capture] = move.CaptureBB
 	}
 	if move.Promotion != None {
-		s.Bitboards[color][move.Promotion] = PopBit(s.Bitboards[color][move.Promotion], move.To)
-		s.Bitboards[color][Pawn] = SetBit(s.Bitboards[!color][Pawn], move.From)
+		s.Bitboards[color][move.Promotion] = move.PromotionBB
+		s.Bitboards[color][Pawn] = move.PromotionPawn
 	}
-
 	if move.Piece == King {
-		dist := int(move.To) - int(move.From)
-		if dist == 2 { // Enroque corto
-			if color {
-				s.Bitboards[color][Rook] = PopBit(SetBit(s.Bitboards[color][Rook], H1), F1)
-			} else {
-				s.Bitboards[color][Rook] = PopBit(SetBit(s.Bitboards[color][Rook], H8), F8)
-			}
-		} else if dist == -2 { // Enroque largo
-			if color {
-				s.Bitboards[color][Rook] = PopBit(SetBit(s.Bitboards[color][Rook], A1), D1)
-			} else {
-				s.Bitboards[color][Rook] = PopBit(SetBit(s.Bitboards[color][Rook], A8), D8)
-			}
-		}
+		s.Castling = move.Castling
+		s.Bitboards[color][Rook] = move.CastleRook
+	} else if move.Piece == Rook {
+		s.Castling = move.Castling
 	}
-
-	s.Bitboards[color][move.Piece] = piece
+	s.friends = move.Friends
+	s.enemies = move.Enemies
+	s.occupied = move.Occupied
 	s.WhiteToMove = color
-	s.friends = s.GetAll(color)
-	s.enemies = s.GetAll(!color)
-	s.occupied = s.friends | s.enemies
 }
 
 func (s *Board) GeneratePseudoMoves() []Move {
@@ -147,12 +176,12 @@ func (s *Board) GeneratePseudoMoves() []Move {
 
 func (s *Board) IsMoveLegal(move *Move) bool {
 	var color bool = s.WhiteToMove
-	s.MakeMove(move)
+	var unMove = s.MakeMove(move)
 	var kingBB uint64 = s.Bitboards[color][King]
 	var result bool
 	if !s.IsUnderAttack(kingBB, !color) {
 		result = true
 	}
-	s.UnMakeMove(move)
+	s.UnMakeMove(unMove)
 	return result
 }
