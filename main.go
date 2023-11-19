@@ -8,10 +8,10 @@ import (
 func main() {
 	//board.Init()
 	var test board.Board = *board.NewBoard()
-	test.ParseFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ")
+	test.ParseFEN("4k3/8/8/b7/1P6/8/8/4K3 w - - 0 1")
 	test.Print()
-	fmt.Println(test.Castling)
-	fmt.Println(test.CanCastle(board.White, false))
+	board.PrintBitboard(test.GetAll(test.WhiteToMove))
+	board.PrintBitboard(test.GetAll(!test.WhiteToMove))
 	moves := test.GeneratePseudoMoves()
 	for _, move := range moves {
 		var color bool = test.WhiteToMove
@@ -22,5 +22,7 @@ func main() {
 		}
 		test.UnMakeMove(unMove)
 	}
-
+	board.PrintBitboard(test.GetAll(test.WhiteToMove))
+	board.PrintBitboard(test.GetAll(!test.WhiteToMove))
+	//FIXME:El rey se mueve y desaparece las piezas enemigas
 }

@@ -31,10 +31,10 @@ func TestStartingPos(t *testing.T) {
 	}
 }
 
-func TestKiwipete(t *testing.T) {
+func TestPosition2(t *testing.T) {
 	//Init()
 	var board Board = *NewBoard()
-	board.ParseFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ")
+	board.ParseFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -")
 
 	type testCase struct {
 		depth      int
@@ -42,12 +42,92 @@ func TestKiwipete(t *testing.T) {
 	}
 
 	testCases := []testCase{
-		{1, 48},   // Nodos en profundidad 1
-		{2, 2039}, // Nodos en profundidad 2
-		//{3, 97862},   // Nodos en profundidad 3
-		//{4, 4085603}, // Nodos en profundidad 4
+		{1, 48},      // Nodos en profundidad 1
+		{2, 2039},    // Nodos en profundidad 2
+		{3, 97862},   // Nodos en profundidad 3
+		{4, 4085603}, // Nodos en profundidad 4
 		//{5, 193690690}, // Nodos en profundidad 5
 		//{6, 8031647685}, // Nodos en profundidad 6
+	}
+
+	for _, tc := range testCases {
+		count := Perft(&board, tc.depth)
+		if count != tc.nodesCount {
+			t.Errorf("Profundidad: %d, Solución: %d nodos, Resultado: %d nodos", tc.depth, tc.nodesCount, count)
+		}
+	}
+}
+
+func TestPosition3(t *testing.T) {
+	//Init()
+	var board Board = *NewBoard()
+	board.ParseFEN("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -")
+
+	type testCase struct {
+		depth      int
+		nodesCount int64
+	}
+
+	testCases := []testCase{
+		{1, 14},       // Nodos en profundidad 1
+		{2, 191},      // Nodos en profundidad 2
+		{3, 2812},     // Nodos en profundidad 3
+		{4, 43238},    // Nodos en profundidad 4
+		{5, 674624},   // Nodos en profundidad 5
+		{6, 11030083}, // Nodos en profundidad 6
+	}
+
+	for _, tc := range testCases {
+		count := Perft(&board, tc.depth)
+		if count != tc.nodesCount {
+			t.Errorf("Profundidad: %d, Solución: %d nodos, Resultado: %d nodos", tc.depth, tc.nodesCount, count)
+		}
+	}
+}
+
+func TestPosition4(t *testing.T) {
+	//Init()
+	var board Board = *NewBoard()
+	board.ParseFEN("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1")
+
+	type testCase struct {
+		depth      int
+		nodesCount int64
+	}
+
+	testCases := []testCase{
+		{1, 6},      // Nodos en profundidad 1
+		{2, 264},    // Nodos en profundidad 2
+		{3, 9467},   // Nodos en profundidad 3
+		{4, 422333}, // Nodos en profundidad 4
+		//{5, 15833292}, // Nodos en profundidad 5
+		//{6, 706045033}, // Nodos en profundidad 6
+	}
+
+	for _, tc := range testCases {
+		count := Perft(&board, tc.depth)
+		if count != tc.nodesCount {
+			t.Errorf("Profundidad: %d, Solución: %d nodos, Resultado: %d nodos", tc.depth, tc.nodesCount, count)
+		}
+	}
+}
+
+func TestPosition5(t *testing.T) {
+	//Init()
+	var board Board = *NewBoard()
+	board.ParseFEN("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8")
+
+	type testCase struct {
+		depth      int
+		nodesCount int64
+	}
+
+	testCases := []testCase{
+		{1, 44},      // Nodos en profundidad 1
+		{2, 1486},    // Nodos en profundidad 2
+		{3, 62379},   // Nodos en profundidad 3
+		{4, 2103487}, // Nodos en profundidad 4
+		//{5, 89941194}, // Nodos en profundidad 5
 	}
 
 	for _, tc := range testCases {

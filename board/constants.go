@@ -41,6 +41,16 @@ const (
 	King
 )
 const (
+	QuietMoves MoveFlag = iota
+	DoublePawnPush
+	Capture
+	Promotion
+	CapturePromotion
+	KingCastle
+	QueenCastle
+	EnpassantCapture
+)
+const (
 	A1 Square = iota
 	B1
 	C1
