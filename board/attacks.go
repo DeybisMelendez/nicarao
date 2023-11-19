@@ -8,6 +8,7 @@ func (s *Board) GetBishopAttacks(square Square, color bool) uint64 {
 	var attacks uint64
 	var blockerIndex Square
 	attacks |= Rays["northWest"][square]
+	// TODO: Podría precalcular los blockerIndex de los rayos en un array
 	if Rays["northWest"][square]&s.occupied != 0 {
 		blockerIndex = Square(bits.TrailingZeros64(Rays["northWest"][square] & s.occupied))
 		attacks &= ^Rays["northWest"][blockerIndex]
@@ -64,7 +65,7 @@ func (s *Board) GetKingAttacks(square Square, color bool) uint64 {
 
 func (s *Board) GetPawnPushes(square Square, color bool) uint64 {
 	var mask uint64
-
+	//TODO: simplificar este código con un array de mascaras mas óptimo
 	if color {
 		mask = PawnWhitePushMasks[square]
 		square += 8
@@ -80,6 +81,7 @@ func (s *Board) GetPawnPushes(square Square, color bool) uint64 {
 	}
 	return mask & ^s.occupied
 }
+
 func (s *Board) GetPawnAttacks(square Square, color bool) uint64 {
 	var mask uint64
 	var enPassantMask uint64
@@ -121,6 +123,7 @@ func (s *Board) IsUnderAttack(pieceBB uint64, color bool) bool {
 	for _, piece := range pieceTypes {
 
 		var attackerBB uint64 = s.Bitboards[color][piece]
+		//TODO: Podría ser mas eficiente precalcular los ataques en la generación de movimientos y guardarlo en el board
 		for attackerBB != 0 {
 			var from Square = Square(bits.TrailingZeros64(attackerBB))
 			var attacks uint64 = s.GenerateAttacksForPiece(piece, from, color)

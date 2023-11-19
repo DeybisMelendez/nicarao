@@ -13,8 +13,8 @@ func init() {
 		Black: {CastleShort: 0x6000000000000000, CastleLong: 0xe00000000000000},
 	}
 	castlingSquares = map[bool]map[bool][]Square{
-		White: {CastleShort: {F1, G1}, CastleLong: {C1, D1}},
-		Black: {CastleShort: {F8, G8}, CastleLong: {C8, D8}},
+		White: {CastleShort: {F1, G1, E1}, CastleLong: {C1, D1, E1}},
+		Black: {CastleShort: {F8, G8, E8}, CastleLong: {C8, D8, E8}},
 	}
 }
 
