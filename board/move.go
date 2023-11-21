@@ -46,10 +46,8 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 	switch move.Flag {
 	case QuietMoves:
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
-		//s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
 	case DoublePawnPush:
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
-		//s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
 		if color {
 			s.Enpassant = move.To - 8
 		} else {
@@ -59,7 +57,6 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 		unMove.Special1 = move.Capture
 		unMove.Special1BB = s.Bitboards[!color][move.Capture]
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
-		//s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
 		s.Bitboards[!color][move.Capture] = PopBit(s.Bitboards[!color][move.Capture], move.To)
 	case Promotion:
 		unMove.Special2 = move.Promotion
@@ -78,8 +75,6 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 		unMove.Special2 = Rook
 		unMove.Special2BB = s.Bitboards[color][Rook]
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
-		//s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
-		s.HandleCastle(color, CastleShort, true)
 		if color {
 			s.Bitboards[color][Rook] = SetBit(PopBit(s.Bitboards[color][Rook], H1), F1)
 		} else {
@@ -89,8 +84,6 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 		unMove.Special2 = Rook
 		unMove.Special2BB = s.Bitboards[color][Rook]
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
-		//s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
-		s.HandleCastle(color, CastleLong, true)
 		if color {
 			s.Bitboards[color][Rook] = SetBit(PopBit(s.Bitboards[color][Rook], A1), D1)
 		} else {
@@ -101,7 +94,6 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 		unMove.Special1 = Pawn //move.Capture
 		unMove.Special1BB = s.Bitboards[!color][Pawn]
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
-		//s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
 		if color {
 			s.Bitboards[!color][Pawn] = PopBit(s.Bitboards[!color][Pawn], move.To-8)
 		} else {
@@ -117,12 +109,16 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 		}
 	}
 	if move.Piece == Rook { // En caso de que tenga derecho a enrocar y este en su casilla inicial
-		if s.CanCastle(color, CastleLong) && ((move.From == A1 && s.WhiteToMove) || (move.From == A8 && !s.WhiteToMove)) {
+		if (move.From == A1 && s.WhiteToMove) || (move.From == A8 && !s.WhiteToMove) {
 			s.HandleCastle(color, CastleLong, true)
 		}
-		if s.CanCastle(color, CastleShort) && ((move.From == H1 && s.WhiteToMove) || (move.From == H8 && !s.WhiteToMove)) {
+		if (move.From == H1 && s.WhiteToMove) || (move.From == H8 && !s.WhiteToMove) {
 			s.HandleCastle(color, CastleShort, true)
 		}
+	}
+	if move.Piece == King {
+		s.HandleCastle(color, CastleShort, true)
+		s.HandleCastle(color, CastleLong, true)
 	}
 	s.WhiteToMove = !color
 	s.friends = s.GetAll(s.WhiteToMove)
@@ -150,9 +146,6 @@ func (s *Board) UnMakeMove(move *UnMove) {
 		s.Bitboards[!color][move.Special1] = move.Special1BB
 		s.Bitboards[color][move.Special2] = move.Special2BB
 	}
-	//s.friends = s.GetAll(s.WhiteToMove)
-	//s.enemies = s.GetAll(!s.WhiteToMove)
-	//s.occupied = s.friends | s.enemies
 }
 
 func (s *Board) GeneratePseudoMoves() []Move {
@@ -252,16 +245,3 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 	}
 	return moves
 }
-
-/*func (s *Board) IsMoveLegal(move *Move) bool {
-	var color bool = s.WhiteToMove
-	s.MakeMove(move)
-	var kingBB uint64 = s.Bitboards[color][King]
-	var result bool
-	if !s.IsUnderAttack(kingBB, !color) {
-		result = true
-	}
-	s.UnMakeMove()
-	return result
-}
-*/

@@ -73,11 +73,7 @@ func (s *Board) CloneBoard() *Board {
 
 //GetAll devuelve un bitboard con todas las casillas ocupadas del jugador indicado
 func (s *Board) GetAll(color bool) uint64 {
-	var total uint64
-	for _, piece := range pieceTypes {
-		total |= s.Bitboards[color][piece]
-	}
-	return total
+	return s.Bitboards[color][Pawn] | s.Bitboards[color][Knight] | s.Bitboards[color][Bishop] | s.Bitboards[color][Rook] | s.Bitboards[color][Queen] | s.Bitboards[color][King]
 }
 
 //GetPiece devuelve la pieza que está controlando la casilla indicada

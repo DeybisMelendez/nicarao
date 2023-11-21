@@ -63,11 +63,11 @@ func (s *Board) GetKnightAttacks(square Square, color bool) uint64 {
 
 func (s *Board) GetKingAttacks(square Square, color bool) uint64 {
 	var attacks uint64 = KingMasks[square]
-	var kingsideOK bool = s.occupied&castlingMask[color][CastleShort] == 0 &&
-		s.CanCastle(color, CastleShort) &&
+	var kingsideOK bool = s.CanCastle(color, CastleShort) &&
+		s.occupied&castlingMask[color][CastleShort] == 0 &&
 		!s.AnyUnderAttack(!s.WhiteToMove, castlingSquares[color][CastleShort]...)
-	var queensideOK bool = s.occupied&castlingMask[color][CastleLong] == 0 &&
-		s.CanCastle(color, CastleLong) &&
+	var queensideOK bool = s.CanCastle(color, CastleLong) &&
+		s.occupied&castlingMask[color][CastleLong] == 0 &&
 		!s.AnyUnderAttack(!s.WhiteToMove, castlingSquares[color][CastleLong]...)
 	if kingsideOK {
 		attacks = SetBit(attacks, castlingSquares[color][CastleShort][1])
