@@ -15,7 +15,7 @@ type Move struct {
 }
 
 type UnMove struct {
-	//TODO: Intentar reducir el tamaño del struct al mínimo necesario
+	//TODO: Intentar cambiar a Copy Make
 	Piece      Piece
 	PieceBB    uint64
 	Special1   Piece
@@ -42,33 +42,14 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 		Castling:  s.Castling,
 	}
 	s.Enpassant = 0
-	// Ajuste del flag KingCastle y QueenCastle
-	if move.Piece == King {
-		var dist int = int(move.To) - int(move.From)
-		if dist == 2 { // Enroque corto
-			move.Flag = KingCastle
-		} else if dist == -2 { // Enroque largo
-			move.Flag = QueenCastle
-		}
-	}
 	unMove.Flag = move.Flag
 	switch move.Flag {
 	case QuietMoves:
-		s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
-		if move.Piece == Rook {
-			if s.CanCastle(color, CastleLong) {
-				if move.From == A1 || move.From == A8 {
-					s.HandleCastle(color, CastleLong, true)
-				}
-			}
-			if s.CanCastle(color, CastleShort) {
-				if move.From == H1 || move.From == H8 {
-					s.HandleCastle(color, CastleShort, true)
-				}
-			}
-		}
+		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
+		//s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
 	case DoublePawnPush:
-		s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
+		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
+		//s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
 		if color {
 			s.Enpassant = move.To - 8
 		} else {
@@ -77,32 +58,27 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 	case Capture:
 		unMove.Special1 = move.Capture
 		unMove.Special1BB = s.Bitboards[!color][move.Capture]
-		s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
+		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
+		//s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
 		s.Bitboards[!color][move.Capture] = PopBit(s.Bitboards[!color][move.Capture], move.To)
-		if move.Capture == Rook {
-			if move.To == A1 || move.To == A8 {
-				s.HandleCastle(!color, CastleLong, true)
-			} else if move.To == H1 || move.To == H8 {
-				s.HandleCastle(!color, CastleShort, true)
-			}
-		}
 	case Promotion:
-		unMove.Special1 = move.Promotion
-		unMove.Special1BB = s.Bitboards[color][move.Promotion]
+		unMove.Special2 = move.Promotion
+		unMove.Special2BB = s.Bitboards[color][move.Promotion]
 		s.Bitboards[color][move.Piece] = PopBit(s.Bitboards[color][move.Piece], move.To)
 		s.Bitboards[color][move.Promotion] = SetBit(s.Bitboards[color][move.Promotion], move.To)
 	case CapturePromotion:
-		unMove.Special1 = move.Promotion
-		unMove.Special1BB = s.Bitboards[color][move.Promotion]
-		unMove.Special2 = move.Capture
-		unMove.Special2BB = s.Bitboards[!color][move.Capture]
+		unMove.Special1 = move.Capture
+		unMove.Special1BB = s.Bitboards[!color][move.Capture]
+		unMove.Special2 = move.Promotion
+		unMove.Special2BB = s.Bitboards[color][move.Promotion]
 		s.Bitboards[color][move.Piece] = PopBit(s.Bitboards[color][move.Piece], move.To)
 		s.Bitboards[color][move.Promotion] = SetBit(s.Bitboards[color][move.Promotion], move.To)
 		s.Bitboards[!color][move.Capture] = PopBit(s.Bitboards[!color][move.Capture], move.To)
 	case KingCastle:
-		unMove.Special1 = Rook
-		unMove.Special1BB = s.Bitboards[color][Rook]
-		s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
+		unMove.Special2 = Rook
+		unMove.Special2BB = s.Bitboards[color][Rook]
+		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
+		//s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
 		s.HandleCastle(color, CastleShort, true)
 		if color {
 			s.Bitboards[color][Rook] = SetBit(PopBit(s.Bitboards[color][Rook], H1), F1)
@@ -110,9 +86,10 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 			s.Bitboards[color][Rook] = SetBit(PopBit(s.Bitboards[color][Rook], H8), F8)
 		}
 	case QueenCastle:
-		unMove.Special1 = Rook
-		unMove.Special1BB = s.Bitboards[color][Rook]
-		s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
+		unMove.Special2 = Rook
+		unMove.Special2BB = s.Bitboards[color][Rook]
+		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
+		//s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
 		s.HandleCastle(color, CastleLong, true)
 		if color {
 			s.Bitboards[color][Rook] = SetBit(PopBit(s.Bitboards[color][Rook], A1), D1)
@@ -121,13 +98,30 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 		}
 
 	case EnpassantCapture:
-		unMove.Special1 = Pawn
+		unMove.Special1 = Pawn //move.Capture
 		unMove.Special1BB = s.Bitboards[!color][Pawn]
-		s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
+		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
+		//s.Bitboards[color][move.Piece] = SetBit(PopBit(s.Bitboards[color][move.Piece], move.From), move.To)
 		if color {
 			s.Bitboards[!color][Pawn] = PopBit(s.Bitboards[!color][Pawn], move.To-8)
 		} else {
 			s.Bitboards[!color][Pawn] = PopBit(s.Bitboards[!color][Pawn], move.To+8)
+		}
+	}
+	// Casos muy especiales sobre derechos de enroque
+	if move.Capture == Rook { // En caso de que una torre sea capturada en su casilla inicial
+		if (move.To == A1 && !s.WhiteToMove) || (move.To == A8 && s.WhiteToMove) {
+			s.HandleCastle(!color, CastleLong, true)
+		} else if (move.To == H1 && !s.WhiteToMove) || (move.To == H8 && s.WhiteToMove) {
+			s.HandleCastle(!color, CastleShort, true)
+		}
+	}
+	if move.Piece == Rook { // En caso de que tenga derecho a enrocar y este en su casilla inicial
+		if s.CanCastle(color, CastleLong) && ((move.From == A1 && s.WhiteToMove) || (move.From == A8 && !s.WhiteToMove)) {
+			s.HandleCastle(color, CastleLong, true)
+		}
+		if s.CanCastle(color, CastleShort) && ((move.From == H1 && s.WhiteToMove) || (move.From == H8 && !s.WhiteToMove)) {
+			s.HandleCastle(color, CastleShort, true)
 		}
 	}
 	s.WhiteToMove = !color
@@ -151,77 +145,109 @@ func (s *Board) UnMakeMove(move *UnMove) {
 	case Capture, EnpassantCapture:
 		s.Bitboards[!color][move.Special1] = move.Special1BB
 	case Promotion, KingCastle, QueenCastle:
-		s.Bitboards[color][move.Special1] = move.Special1BB
+		s.Bitboards[color][move.Special2] = move.Special2BB
 	case CapturePromotion:
-		s.Bitboards[color][move.Special1] = move.Special1BB
-		s.Bitboards[!color][move.Special2] = move.Special2BB
+		s.Bitboards[!color][move.Special1] = move.Special1BB
+		s.Bitboards[color][move.Special2] = move.Special2BB
 	}
-
+	//s.friends = s.GetAll(s.WhiteToMove)
+	//s.enemies = s.GetAll(!s.WhiteToMove)
+	//s.occupied = s.friends | s.enemies
 }
 
 func (s *Board) GeneratePseudoMoves() []Move {
 	var moves []Move
 	var color bool = s.WhiteToMove
+	var from Square
 	for _, piece := range pieceTypes {
 		var pieceBoard uint64 = s.Bitboards[color][piece]
 
 		for pieceBoard != 0 {
-			var from Square = Square(bits.TrailingZeros64(pieceBoard))
-			var attacks uint64 = s.GenerateAttacksForPiece(piece, from, s.WhiteToMove)
-			var flag MoveFlag
-			if piece == King {
-				var kingsideOK bool = s.occupied&castlingMask[color][CastleShort] == 0 &&
-					s.CanCastle(color, CastleShort) &&
-					!s.AnyUnderAttack(!s.WhiteToMove, castlingSquares[color][CastleShort]...)
-				var queensideOK bool = s.occupied&castlingMask[color][CastleLong] == 0 &&
-					s.CanCastle(color, CastleLong) &&
-					!s.AnyUnderAttack(!s.WhiteToMove, castlingSquares[color][CastleLong]...)
-				if kingsideOK {
-					attacks = SetBit(attacks, castlingSquares[color][CastleShort][1])
+			from = Square(bits.TrailingZeros64(pieceBoard))
+			moves = append(moves, s.GeneratePseudoMovesForPiece(piece, from, color)...)
+			pieceBoard &= pieceBoard - 1
+		}
+	}
+	return moves
+}
+func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool) []Move {
+	var attacks uint64
+	var to Square
+	var capture Piece
+	var flag MoveFlag
+	var moves []Move
+	switch piece {
+	case Pawn:
+		attacks = s.GetPawnAttacks(from, color) | s.GetPawnPushes(from, color)
+		for attacks != 0 {
+			to = Square(bits.TrailingZeros64(attacks))
+			capture = s.GetPiece(to, !s.WhiteToMove)
+			if (to < A2 && !color) || (to > H7 && color) { //Coronación de peón
+				if capture == None {
+					flag = Promotion
+				} else {
+					flag = CapturePromotion
 				}
-				if queensideOK {
-					attacks = SetBit(attacks, castlingSquares[color][CastleLong][0])
+				for _, promo := range piecePromotions {
+					moves = append(moves, Move{From: from, To: to, Piece: piece,
+						Capture: capture, Promotion: promo, Flag: flag})
 				}
-			}
-			for attacks != 0 {
-				var to Square = Square(bits.TrailingZeros64(attacks))
-				var capture Piece = s.GetPiece(to, !s.WhiteToMove)
+			} else if (color && to-from == 16) || (!color && from-to == 16) { //Doble peón
+				moves = append(moves, Move{From: from, To: to,
+					Piece: piece, Flag: DoublePawnPush, Capture: capture})
+			} else if s.Enpassant != 0 && s.Enpassant == to { //Enpassant Capture
+				moves = append(moves, Move{From: from, To: to,
+					Piece: piece, Capture: capture, Flag: EnpassantCapture})
+			} else {
 				if capture == None {
 					flag = QuietMoves
 				} else {
 					flag = Capture
 				}
-				if piece == Pawn {
-					if to < A2 || to > H7 { //Promotion
-						for _, promotion := range piecePromotions {
-							if capture == None {
-								flag = Promotion
-							} else {
-								flag = CapturePromotion
-							}
-							moves = append(moves, Move{From: from, To: to, Piece: piece,
-								Capture: capture, Promotion: promotion, Flag: flag})
-						}
-					} else if color && to-from == 16 { //Enpassant blancas
-						moves = append(moves, Move{From: from, To: to,
-							Piece: piece, Flag: DoublePawnPush, Capture: capture})
-					} else if !color && from-to == 16 { //Enpassant negras
-						moves = append(moves, Move{From: from, To: to,
-							Piece: piece, Flag: DoublePawnPush, Capture: capture})
-					} else if s.Enpassant != 0 && s.Enpassant == to { //Enpassant Capture
-						moves = append(moves, Move{From: from, To: to,
-							Piece: piece, Capture: capture, Flag: EnpassantCapture})
-					} else {
-						moves = append(moves, Move{From: from, To: to, //Pawn move
-							Piece: piece, Flag: flag, Capture: capture}) // en teoría no necesita Capture
-					}
-				} else {
-					moves = append(moves, Move{From: from, To: to,
-						Piece: piece, Capture: capture, Flag: flag})
-				}
-				attacks &= attacks - 1
+				moves = append(moves, Move{From: from, To: to, //Pawn move
+					Piece: piece, Flag: flag, Capture: capture}) // en teoría no necesita Capture
 			}
-			pieceBoard &= pieceBoard - 1
+			attacks &= attacks - 1
+		}
+	case Knight, Bishop, Rook, Queen:
+		switch piece {
+		case Knight:
+			attacks = s.GetKnightAttacks(from, color)
+		case Bishop:
+			attacks = s.GetBishopAttacks(from, color)
+		case Rook:
+			attacks = s.GetRookAttacks(from, color)
+		case Queen:
+			attacks = s.GetBishopAttacks(from, color) | s.GetRookAttacks(from, color)
+		}
+		for attacks != 0 {
+			to = Square(bits.TrailingZeros64(attacks))
+			capture = s.GetPiece(to, !s.WhiteToMove)
+			flag = QuietMoves
+			if capture != None {
+				flag = Capture
+			}
+			moves = append(moves, Move{From: from, To: to,
+				Piece: piece, Flag: flag, Capture: capture})
+			attacks &= attacks - 1
+		}
+	case King:
+		attacks = s.GetKingAttacks(from, color)
+		for attacks != 0 {
+			to = Square(bits.TrailingZeros64(attacks))
+			capture = s.GetPiece(to, !s.WhiteToMove)
+			flag = QuietMoves
+			var dist int = int(to) - int(from)
+			if dist == 2 { // Enroque corto
+				flag = KingCastle
+			} else if dist == -2 { // Enroque largo
+				flag = QueenCastle
+			} else if capture != None { // Si hay captura no hay enroque
+				flag = Capture
+			}
+			moves = append(moves, Move{From: from, To: to,
+				Piece: piece, Flag: flag, Capture: capture})
+			attacks &= attacks - 1
 		}
 	}
 	return moves

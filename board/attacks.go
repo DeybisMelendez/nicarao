@@ -6,50 +6,52 @@ import (
 
 func (s *Board) GetBishopAttacks(square Square, color bool) uint64 {
 	var attacks uint64
-	var blockerIndex Square
+	var blockerIndex int
+	var occluded uint64
 	attacks |= Rays["northWest"][square]
-	// TODO: Podría precalcular los blockerIndex de los rayos en un array
-	if Rays["northWest"][square]&s.occupied != 0 {
-		blockerIndex = Square(bits.TrailingZeros64(Rays["northWest"][square] & s.occupied))
+	if occluded = Rays["northWest"][square] & s.occupied; occluded != 0 {
+		blockerIndex = bits.TrailingZeros64(occluded)
 		attacks &= ^Rays["northWest"][blockerIndex]
 	}
 	attacks |= Rays["northEast"][square]
-	if Rays["northEast"][square]&s.occupied != 0 {
-		blockerIndex = Square(bits.TrailingZeros64(Rays["northEast"][square] & s.occupied))
+	if occluded = Rays["northEast"][square] & s.occupied; occluded != 0 {
+		blockerIndex = bits.TrailingZeros64(occluded)
 		attacks &= ^Rays["northEast"][blockerIndex]
 	}
 	attacks |= Rays["southWest"][square]
-	if Rays["southWest"][square]&s.occupied != 0 {
-		blockerIndex = 63 - Square(bits.LeadingZeros64(Rays["southWest"][square]&s.occupied))
+	if occluded = Rays["southWest"][square] & s.occupied; occluded != 0 {
+		blockerIndex = 63 - bits.LeadingZeros64(occluded)
 		attacks &= ^Rays["southWest"][blockerIndex]
 	}
 	attacks |= Rays["southEast"][square]
-	if Rays["southEast"][square]&s.occupied != 0 {
-		blockerIndex = 63 - Square(bits.LeadingZeros64(Rays["southEast"][square]&s.occupied))
+	if occluded = Rays["southEast"][square] & s.occupied; occluded != 0 {
+		blockerIndex = 63 - bits.LeadingZeros64(occluded)
 		attacks &= ^Rays["southEast"][blockerIndex]
 	}
 	return s.filterAttacks(attacks, color)
 }
 func (s *Board) GetRookAttacks(square Square, color bool) uint64 {
 	var attacks uint64
+	var blockerIndex int
+	var occluded uint64
 	attacks |= Rays["north"][square]
-	if Rays["north"][square]&s.occupied != 0 {
-		var blockerIndex = Square(bits.TrailingZeros64(Rays["north"][square] & s.occupied))
+	if occluded = Rays["north"][square] & s.occupied; occluded != 0 {
+		blockerIndex = bits.TrailingZeros64(occluded)
 		attacks &= ^Rays["north"][blockerIndex]
 	}
 	attacks |= Rays["east"][square]
-	if Rays["east"][square]&s.occupied != 0 {
-		var blockerIndex = Square(bits.TrailingZeros64(Rays["east"][square] & s.occupied))
+	if occluded = Rays["east"][square] & s.occupied; occluded != 0 {
+		blockerIndex = bits.TrailingZeros64(occluded)
 		attacks &= ^Rays["east"][blockerIndex]
 	}
 	attacks |= Rays["south"][square]
-	if Rays["south"][square]&s.occupied != 0 {
-		var blockerIndex = 63 - Square(bits.LeadingZeros64(Rays["south"][square]&s.occupied))
+	if occluded = Rays["south"][square] & s.occupied; occluded != 0 {
+		blockerIndex = 63 - bits.LeadingZeros64(occluded)
 		attacks &= ^Rays["south"][blockerIndex]
 	}
 	attacks |= Rays["west"][square]
-	if Rays["west"][square]&s.occupied != 0 {
-		var blockerIndex = 63 - Square(bits.LeadingZeros64(Rays["west"][square]&s.occupied))
+	if occluded = Rays["west"][square] & s.occupied; occluded != 0 {
+		blockerIndex = 63 - bits.LeadingZeros64(occluded)
 		attacks &= ^Rays["west"][blockerIndex]
 	}
 	return s.filterAttacks(attacks, color)
@@ -60,43 +62,44 @@ func (s *Board) GetKnightAttacks(square Square, color bool) uint64 {
 }
 
 func (s *Board) GetKingAttacks(square Square, color bool) uint64 {
-	return s.filterAttacks(KingMasks[square], color)
+	var attacks uint64 = KingMasks[square]
+	var kingsideOK bool = s.occupied&castlingMask[color][CastleShort] == 0 &&
+		s.CanCastle(color, CastleShort) &&
+		!s.AnyUnderAttack(!s.WhiteToMove, castlingSquares[color][CastleShort]...)
+	var queensideOK bool = s.occupied&castlingMask[color][CastleLong] == 0 &&
+		s.CanCastle(color, CastleLong) &&
+		!s.AnyUnderAttack(!s.WhiteToMove, castlingSquares[color][CastleLong]...)
+	if kingsideOK {
+		attacks = SetBit(attacks, castlingSquares[color][CastleShort][1])
+	}
+	if queensideOK {
+		attacks = SetBit(attacks, castlingSquares[color][CastleLong][0])
+	}
+	return s.filterAttacks(attacks, color)
 }
 
 func (s *Board) GetPawnPushes(square Square, color bool) uint64 {
-	var mask uint64
-	//TODO: simplificar este código con un array de mascaras mas óptimo
+	var mask uint64 = PawnPushesMasks[color][square]
 	if color {
-		mask = PawnWhitePushMasks[square]
 		square += 8
-		if SetBit(0, square)&s.occupied != 0 {
-			mask = 0
-		}
 	} else {
-		mask = PawnBlackPushMasks[square]
 		square -= 8
-		if SetBit(0, square)&s.occupied != 0 {
-			mask = 0
-		}
+	}
+	if SetBit(0, square)&s.occupied != 0 {
+		return 0
 	}
 	return mask & ^s.occupied
 }
 
 func (s *Board) GetPawnAttacks(square Square, color bool) uint64 {
-	var mask uint64
 	var enPassantMask uint64
 	if s.Enpassant != 0 {
 		enPassantMask = SetBit(0, s.Enpassant)
 	}
-	if color {
-		mask |= PawnWhiteAttackMasks[square]
-	} else {
-		mask |= PawnBlackAttacksMasks[square]
-	}
 	if color == s.WhiteToMove {
-		return mask & (s.enemies | enPassantMask)
+		return PawnAttacksMasks[color][square] & (s.enemies | enPassantMask)
 	}
-	return mask & (s.friends | enPassantMask)
+	return PawnAttacksMasks[color][square] & (s.friends | enPassantMask)
 }
 
 func (s *Board) GenerateAttacksForPiece(piece Piece, from Square, color bool) uint64 {
