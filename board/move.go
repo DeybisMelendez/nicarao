@@ -13,91 +13,77 @@ type Move struct {
 	Promotion Piece
 	Flag      MoveFlag
 }
-
-type UnMove struct {
-	//TODO: Intentar cambiar a Copy Make
-	Piece      Piece
-	PieceBB    uint64
-	Special1   Piece
-	Special1BB uint64
-	Special2   Piece
-	Special2BB uint64
-	Flag       MoveFlag
-	Enpassant  Square
-	Castling   uint8
-	Friends    uint64
-	Enemies    uint64
-	Occupied   uint64
+type UnMakeInfo struct {
+	Enpassant Square
+	Castling  uint8
 }
 
-func (s *Board) MakeMove(move *Move) *UnMove {
+func (s *Board) MakeMove(move *Move) UnMakeInfo {
 	var color bool = s.WhiteToMove
-	var unMove UnMove = UnMove{
-		Piece:     move.Piece,
-		PieceBB:   s.Bitboards[color][move.Piece],
-		Friends:   s.friends,
-		Enemies:   s.enemies,
-		Occupied:  s.occupied,
+	var unMakeInfo UnMakeInfo = UnMakeInfo{
 		Enpassant: s.Enpassant,
 		Castling:  s.Castling,
 	}
 	s.Enpassant = 0
-	unMove.Flag = move.Flag
 	switch move.Flag {
 	case QuietMoves:
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
+		s.friends = SetPopBit(s.friends, move.To, move.From)
 	case DoublePawnPush:
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
+		s.friends = SetPopBit(s.friends, move.To, move.From)
 		if color {
 			s.Enpassant = move.To - 8
 		} else {
 			s.Enpassant = move.To + 8
 		}
 	case Capture:
-		unMove.Special1 = move.Capture
-		unMove.Special1BB = s.Bitboards[!color][move.Capture]
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
 		s.Bitboards[!color][move.Capture] = PopBit(s.Bitboards[!color][move.Capture], move.To)
+		s.friends = SetPopBit(s.friends, move.To, move.From)
+		s.enemies = PopBit(s.enemies, move.To)
 	case Promotion:
-		unMove.Special2 = move.Promotion
-		unMove.Special2BB = s.Bitboards[color][move.Promotion]
-		s.Bitboards[color][move.Piece] = PopBit(s.Bitboards[color][move.Piece], move.To)
+		s.Bitboards[color][move.Piece] = PopBit(s.Bitboards[color][move.Piece], move.From)
 		s.Bitboards[color][move.Promotion] = SetBit(s.Bitboards[color][move.Promotion], move.To)
+		s.friends = PopBit(s.friends, move.From)
+		s.friends = SetBit(s.friends, move.To)
 	case CapturePromotion:
-		unMove.Special1 = move.Capture
-		unMove.Special1BB = s.Bitboards[!color][move.Capture]
-		unMove.Special2 = move.Promotion
-		unMove.Special2BB = s.Bitboards[color][move.Promotion]
-		s.Bitboards[color][move.Piece] = PopBit(s.Bitboards[color][move.Piece], move.To)
+		s.Bitboards[color][move.Piece] = PopBit(s.Bitboards[color][move.Piece], move.From)
 		s.Bitboards[color][move.Promotion] = SetBit(s.Bitboards[color][move.Promotion], move.To)
 		s.Bitboards[!color][move.Capture] = PopBit(s.Bitboards[!color][move.Capture], move.To)
+		s.friends = PopBit(s.friends, move.From)
+		s.friends = SetBit(s.friends, move.To)
+		s.enemies = PopBit(s.enemies, move.To)
 	case KingCastle:
-		unMove.Special2 = Rook
-		unMove.Special2BB = s.Bitboards[color][Rook]
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
+		s.friends = SetPopBit(s.friends, move.To, move.From)
 		if color {
 			s.Bitboards[color][Rook] = SetBit(PopBit(s.Bitboards[color][Rook], H1), F1)
+			s.friends = SetBit(PopBit(s.friends, H1), F1)
 		} else {
 			s.Bitboards[color][Rook] = SetBit(PopBit(s.Bitboards[color][Rook], H8), F8)
+			s.friends = SetBit(PopBit(s.friends, H8), F8)
 		}
 	case QueenCastle:
-		unMove.Special2 = Rook
-		unMove.Special2BB = s.Bitboards[color][Rook]
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
+		s.friends = SetPopBit(s.friends, move.To, move.From)
 		if color {
 			s.Bitboards[color][Rook] = SetBit(PopBit(s.Bitboards[color][Rook], A1), D1)
+			s.friends = SetBit(PopBit(s.friends, A1), D1)
 		} else {
 			s.Bitboards[color][Rook] = SetBit(PopBit(s.Bitboards[color][Rook], A8), D8)
+			s.friends = SetBit(PopBit(s.friends, A8), D8)
 		}
 
 	case EnpassantCapture:
-		unMove.Special1 = Pawn //move.Capture
-		unMove.Special1BB = s.Bitboards[!color][Pawn]
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
+		s.friends = SetPopBit(s.friends, move.To, move.From)
 		if color {
 			s.Bitboards[!color][Pawn] = PopBit(s.Bitboards[!color][Pawn], move.To-8)
+			s.enemies = PopBit(s.enemies, move.To-8)
 		} else {
 			s.Bitboards[!color][Pawn] = PopBit(s.Bitboards[!color][Pawn], move.To+8)
+			s.enemies = PopBit(s.enemies, move.To+8)
 		}
 	}
 	// Casos muy especiales sobre derechos de enroque
@@ -121,31 +107,75 @@ func (s *Board) MakeMove(move *Move) *UnMove {
 		s.HandleCastle(color, CastleLong, true)
 	}
 	s.WhiteToMove = !color
-	s.friends = s.GetAll(s.WhiteToMove)
-	s.enemies = s.GetAll(!s.WhiteToMove)
+	var copyFriends uint64 = s.friends
+	s.friends = s.enemies
+	s.enemies = copyFriends
 	s.occupied = s.friends | s.enemies
-	return &unMove
+	return unMakeInfo
 }
 
-func (s *Board) UnMakeMove(move *UnMove) {
+func (s *Board) UnMakeMove(move *Move, info *UnMakeInfo) {
 	var color bool = !s.WhiteToMove
-	s.WhiteToMove = color
-	s.Enpassant = move.Enpassant
-	s.Castling = move.Castling
-	s.friends = move.Friends
-	s.enemies = move.Enemies
-	s.occupied = move.Occupied
-	s.Bitboards[color][move.Piece] = move.PieceBB
+	var copyFriends uint64 = s.friends
+	s.friends = s.enemies
+	s.enemies = copyFriends
+	s.Enpassant = info.Enpassant
+	s.Castling = info.Castling
 
 	switch move.Flag {
-	case Capture, EnpassantCapture:
-		s.Bitboards[!color][move.Special1] = move.Special1BB
-	case Promotion, KingCastle, QueenCastle:
-		s.Bitboards[color][move.Special2] = move.Special2BB
+	case QuietMoves, DoublePawnPush:
+		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.From, move.To)
+		s.friends = SetPopBit(s.friends, move.From, move.To)
+	case Capture:
+		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.From, move.To)
+		s.Bitboards[!color][move.Capture] = SetBit(s.Bitboards[!color][move.Capture], move.To)
+		s.friends = SetPopBit(s.friends, move.From, move.To)
+		s.enemies = SetBit(s.enemies, move.To)
+	case Promotion:
+		s.Bitboards[color][move.Piece] = SetBit(s.Bitboards[color][move.Piece], move.From)
+		s.Bitboards[color][move.Promotion] = PopBit(s.Bitboards[color][move.Promotion], move.To)
+		s.friends = SetBit(s.friends, move.From)
+		s.friends = PopBit(s.friends, move.To)
 	case CapturePromotion:
-		s.Bitboards[!color][move.Special1] = move.Special1BB
-		s.Bitboards[color][move.Special2] = move.Special2BB
+		s.Bitboards[color][move.Piece] = SetBit(s.Bitboards[color][move.Piece], move.From)
+		s.Bitboards[color][move.Promotion] = PopBit(s.Bitboards[color][move.Promotion], move.To)
+		s.Bitboards[!color][move.Capture] = SetBit(s.Bitboards[!color][move.Capture], move.To)
+		s.friends = SetBit(s.friends, move.From)
+		s.friends = PopBit(s.friends, move.To)
+		s.enemies = SetBit(s.enemies, move.To)
+	case KingCastle:
+		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.From, move.To)
+		s.friends = SetPopBit(s.friends, move.From, move.To)
+		if color {
+			s.Bitboards[color][Rook] = PopBit(SetBit(s.Bitboards[color][Rook], H1), F1)
+			s.friends = PopBit(SetBit(s.friends, H1), F1)
+		} else {
+			s.Bitboards[color][Rook] = PopBit(SetBit(s.Bitboards[color][Rook], H8), F8)
+			s.friends = PopBit(SetBit(s.friends, H8), F8)
+		}
+	case QueenCastle:
+		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.From, move.To)
+		s.friends = SetPopBit(s.friends, move.From, move.To)
+		if color {
+			s.Bitboards[color][Rook] = PopBit(SetBit(s.Bitboards[color][Rook], A1), D1)
+			s.friends = PopBit(SetBit(s.friends, A1), D1)
+		} else {
+			s.Bitboards[color][Rook] = PopBit(SetBit(s.Bitboards[color][Rook], A8), D8)
+			s.friends = PopBit(SetBit(s.friends, A8), D8)
+		}
+	case EnpassantCapture:
+		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.From, move.To)
+		s.friends = SetPopBit(s.friends, move.From, move.To)
+		if color {
+			s.Bitboards[!color][Pawn] = SetBit(s.Bitboards[!color][Pawn], move.To-8)
+			s.enemies = SetBit(s.enemies, move.To-8)
+		} else {
+			s.Bitboards[!color][Pawn] = SetBit(s.Bitboards[!color][Pawn], move.To+8)
+			s.enemies = SetBit(s.enemies, move.To+8)
+		}
 	}
+	s.WhiteToMove = color
+	s.occupied = s.friends | s.enemies
 }
 
 func (s *Board) GeneratePseudoMoves() []Move {
