@@ -51,8 +51,7 @@ func (s *Board) MakeMove(move *Move) UnMakeInfo {
 		s.Bitboards[color][move.Piece] = PopBit(s.Bitboards[color][move.Piece], move.From)
 		s.Bitboards[color][move.Promotion] = SetBit(s.Bitboards[color][move.Promotion], move.To)
 		s.Bitboards[!color][move.Capture] = PopBit(s.Bitboards[!color][move.Capture], move.To)
-		s.friends = PopBit(s.friends, move.From)
-		s.friends = SetBit(s.friends, move.To)
+		s.friends = SetPopBit(s.friends, move.To, move.From)
 		s.enemies = PopBit(s.enemies, move.To)
 	case KingCastle:
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
@@ -74,7 +73,6 @@ func (s *Board) MakeMove(move *Move) UnMakeInfo {
 			s.Bitboards[color][Rook] = SetBit(PopBit(s.Bitboards[color][Rook], A8), D8)
 			s.friends = SetBit(PopBit(s.friends, A8), D8)
 		}
-
 	case EnpassantCapture:
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.To, move.From)
 		s.friends = SetPopBit(s.friends, move.To, move.From)
@@ -140,8 +138,7 @@ func (s *Board) UnMakeMove(move *Move, info *UnMakeInfo) {
 		s.Bitboards[color][move.Piece] = SetBit(s.Bitboards[color][move.Piece], move.From)
 		s.Bitboards[color][move.Promotion] = PopBit(s.Bitboards[color][move.Promotion], move.To)
 		s.Bitboards[!color][move.Capture] = SetBit(s.Bitboards[!color][move.Capture], move.To)
-		s.friends = SetBit(s.friends, move.From)
-		s.friends = PopBit(s.friends, move.To)
+		s.friends = SetPopBit(s.friends, move.From, move.To)
 		s.enemies = SetBit(s.enemies, move.To)
 	case KingCastle:
 		s.Bitboards[color][move.Piece] = SetPopBit(s.Bitboards[color][move.Piece], move.From, move.To)
