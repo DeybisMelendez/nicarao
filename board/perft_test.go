@@ -73,7 +73,7 @@ func TestPosition3(t *testing.T) {
 		{3, 2812},     // Nodos en profundidad 3
 		{4, 43238},    // Nodos en profundidad 4
 		{5, 674624},   // Nodos en profundidad 5
-		{6, 11030083}, // Nodos en profundidad 6 17.0 segundos
+		{6, 11030083}, // Nodos en profundidad 6 16.4 segundos
 	}
 
 	for _, tc := range testCases {

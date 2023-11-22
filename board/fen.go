@@ -26,14 +26,14 @@ func (s *Board) ParseFEN(fen string) error {
 		case '1', '2', '3', '4', '5', '6', '7', '8':
 			file += Square(char - '0')
 		default:
-			piece := CharToPiece(char)
+			piece := charToPiece(char)
 			s.Bitboards[piece <= 7][piece%7] |= SetBit(0, rank*8+file)
 			file++
 		}
 	}
 	if parts[2] != "-" {
 		castlingRights := parts[2]
-		s.ParseCastling(castlingRights)
+		s.parseCastling(castlingRights)
 	}
 	if parts[3] != "-" {
 		enpassantSquare, _ := StringToSquare(parts[3])
@@ -47,7 +47,7 @@ func (s *Board) ParseFEN(fen string) error {
 	return nil
 }
 
-func CharToPiece(char rune) Piece {
+func charToPiece(char rune) Piece {
 	switch char {
 	case 'P':
 		return Pawn
@@ -78,30 +78,7 @@ func CharToPiece(char rune) Piece {
 	}
 }
 
-func (s *Board) Print() {
-	fmt.Printf("  a b c d e f g h\n")
-	for rank := 7; rank >= 0; rank-- {
-		fmt.Printf("%d ", rank+1)
-		for file := 0; file < 8; file++ {
-			square := rank*8 + file
-			piece := s.GetPiece(Square(square), White)
-			if piece == None {
-				piece = s.GetPiece(Square(square), Black)
-				fmt.Printf("%s ", pieceToEmoji(piece))
-			} else {
-				fmt.Printf("%s ", pieceToEmoji(piece+6))
-			}
-		}
-		fmt.Printf("\n")
-	}
-	fmt.Printf("\n")
-}
-func PieceToChar(piece Piece) string {
-	pieceChars := ".PNBRQK"
-	return string(pieceChars[piece])
-}
-
-func (s *Board) ParseCastling(rights string) {
+func (s *Board) parseCastling(rights string) {
 	for _, char := range rights {
 		switch char {
 		case 'K':

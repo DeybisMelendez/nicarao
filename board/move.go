@@ -178,8 +178,9 @@ func (s *Board) UnMakeMove(move *Move, info *UnMakeInfo) {
 func (s *Board) GeneratePseudoMoves(moves *[]Move) {
 	var color bool = s.WhiteToMove
 	var from Square
+	var pieceBoard uint64
 	for _, piece := range pieceTypes {
-		var pieceBoard uint64 = s.Bitboards[color][piece]
+		pieceBoard = s.Bitboards[color][piece]
 
 		for pieceBoard != 0 {
 			from = Square(bits.TrailingZeros64(pieceBoard))
@@ -254,7 +255,7 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 			to = Square(bits.TrailingZeros64(attacks))
 			capture = s.GetPiece(to, !s.WhiteToMove)
 			flag = QuietMoves
-			var dist int = int(to) - int(from)
+			var dist int8 = int8(to) - int8(from)
 			if dist == 2 { // Enroque corto
 				flag = KingCastle
 			} else if dist == -2 { // Enroque largo

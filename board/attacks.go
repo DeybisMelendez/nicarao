@@ -79,7 +79,7 @@ func (s *Board) GetPawnPushes(square Square, color bool) uint64 {
 
 func (s *Board) GetPawnAttacks(square Square, color bool) uint64 {
 	var enPassantMask uint64
-	if s.Enpassant != 0 {
+	if s.Enpassant != 0 && color == s.WhiteToMove {
 		enPassantMask = SetBit(0, s.Enpassant)
 	}
 	if color == s.WhiteToMove {
