@@ -51,10 +51,10 @@ func (s *Board) GetKingAttacks(square Square, color bool) uint64 {
 	var attacks uint64 = KingMasks[square]
 	var kingsideOK bool = s.CanCastle(color, CastleShort) &&
 		s.occupied&castlingMask[color][CastleShort] == 0 &&
-		!s.AnyUnderAttack(!s.WhiteToMove, castlingSquares[color][CastleShort]...)
+		!s.AnyUnderAttack(color, castlingSquares[color][CastleShort]...)
 	var queensideOK bool = s.CanCastle(color, CastleLong) &&
 		s.occupied&castlingMask[color][CastleLong] == 0 &&
-		!s.AnyUnderAttack(!s.WhiteToMove, castlingSquares[color][CastleLong]...)
+		!s.AnyUnderAttack(color, castlingSquares[color][CastleLong]...)
 	if kingsideOK {
 		attacks = SetBit(attacks, castlingSquares[color][CastleShort][1])
 	}
@@ -107,9 +107,14 @@ func (s *Board) GenerateAttacksForPiece(piece Piece, from Square, color bool) ui
 	return 0
 }
 
-func (s *Board) IsUnderAttack(pieceBB uint64, color bool) bool {
-
-	for _, piece := range pieceTypes {
+func (s *Board) IsUnderAttack(square Square, color bool) bool {
+	var knightAttacks uint64 = s.GetKnightAttacks(square, color) & s.Bitboards[!color][Knight]
+	var rookQueenAttacks uint64 = s.GetRookAttacks(square, color) & (s.Bitboards[!color][Rook] | s.Bitboards[!color][Queen])
+	var bishopQueenAttacks uint64 = s.GetBishopAttacks(square, color) & (s.Bitboards[!color][Bishop] | s.Bitboards[!color][Queen])
+	var pawnAttacks uint64 = s.GetPawnAttacks(square, color) & s.Bitboards[!color][Pawn]
+	var kingAttacks uint64 = KingMasks[square] & s.Bitboards[!color][King]
+	return knightAttacks|rookQueenAttacks|bishopQueenAttacks|pawnAttacks|kingAttacks != 0
+	/*for _, piece := range pieceTypes {
 
 		var attackerBB uint64 = s.Bitboards[color][piece]
 		//TODO: Podría ser mas eficiente precalcular los ataques en la generación de movimientos y guardarlo en el board
@@ -122,12 +127,12 @@ func (s *Board) IsUnderAttack(pieceBB uint64, color bool) bool {
 			attackerBB &= attackerBB - 1
 		}
 	}
-	return false
+	return false*/
 }
 func (s *Board) AnyUnderAttack(color bool, squares ...Square) bool {
 	for _, square := range squares {
-		var pieceBB uint64 = SetBit(0, square)
-		if s.IsUnderAttack(pieceBB, color) {
+		//var pieceBB uint64 = SetBit(0, square)
+		if s.IsUnderAttack(square, color) {
 			return true
 		}
 	}

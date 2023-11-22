@@ -19,7 +19,7 @@ func TestStartingPos(t *testing.T) {
 		{2, 400},     // Nodos en profundidad 2
 		{3, 8902},    // Nodos en profundidad 3
 		{4, 197281},  // Nodos en profundidad 4
-		{5, 4865609}, // Nodos en profundidad 5 14 segundos
+		{5, 4865609}, // Nodos en profundidad 5 6.5 segundos
 		//{6, 119060324}, // Nodos en profundidad 6 Nota: Demasiado lento para llegar al nodo 6
 	}
 
@@ -42,10 +42,10 @@ func TestPosition2(t *testing.T) {
 	}
 
 	testCases := []testCase{
-		{1, 48},    // Nodos en profundidad 1
-		{2, 2039},  // Nodos en profundidad 2
-		{3, 97862}, // Nodos en profundidad 3
-		//{4, 4085603}, // Nodos en profundidad 4
+		{1, 48},      // Nodos en profundidad 1
+		{2, 2039},    // Nodos en profundidad 2
+		{3, 97862},   // Nodos en profundidad 3
+		{4, 4085603}, // Nodos en profundidad 4 5.5 segundos
 		//{5, 193690690}, // Nodos en profundidad 5
 		//{6, 8031647685}, // Nodos en profundidad 6
 	}
@@ -74,7 +74,7 @@ func TestPosition3(t *testing.T) {
 		{3, 2812},     // Nodos en profundidad 3
 		{4, 43238},    // Nodos en profundidad 4
 		{5, 674624},   // Nodos en profundidad 5
-		{6, 11030083}, // Nodos en profundidad 6
+		{6, 11030083}, // Nodos en profundidad 6 17.4 segundos
 	}
 
 	for _, tc := range testCases {
@@ -96,11 +96,11 @@ func TestPosition4(t *testing.T) {
 	}
 
 	testCases := []testCase{
-		{1, 6},      // Nodos en profundidad 1
-		{2, 264},    // Nodos en profundidad 2
-		{3, 9467},   // Nodos en profundidad 3
-		{4, 422333}, // Nodos en profundidad 4
-		//{5, 15833292}, // Nodos en profundidad 5
+		{1, 6},        // Nodos en profundidad 1
+		{2, 264},      // Nodos en profundidad 2
+		{3, 9467},     // Nodos en profundidad 3
+		{4, 422333},   // Nodos en profundidad 4
+		{5, 15833292}, // Nodos en profundidad 5 22.2 segundos
 		//{6, 706045033}, // Nodos en profundidad 6
 	}
 
@@ -126,7 +126,7 @@ func TestPosition5(t *testing.T) {
 		{1, 44},      // Nodos en profundidad 1
 		{2, 1486},    // Nodos en profundidad 2
 		{3, 62379},   // Nodos en profundidad 3
-		{4, 2103487}, // Nodos en profundidad 4
+		{4, 2103487}, // Nodos en profundidad 4 2.9 segundos
 		//{5, 89941194}, // Nodos en profundidad 5
 	}
 
