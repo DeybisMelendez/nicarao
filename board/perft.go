@@ -8,7 +8,8 @@ func Perft(b *Board, depth int) int64 {
 	}
 
 	var totalNodes int64
-	moves := b.GeneratePseudoMoves()
+	var moves []Move
+	b.GeneratePseudoMoves(&moves)
 	for _, move := range moves {
 		var color bool = b.WhiteToMove
 		var unMakeInfo = b.MakeMove(&move)

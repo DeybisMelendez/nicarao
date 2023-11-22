@@ -18,8 +18,6 @@ type UnMakeInfo struct {
 	Castling  uint8
 }
 
-//Note: IsMoveLegal podría ser una variante de Make/Unmake mas isUnder attack reducido
-
 func (s *Board) MakeMove(move *Move) UnMakeInfo {
 	var color bool = s.WhiteToMove
 	var unMakeInfo UnMakeInfo = UnMakeInfo{
@@ -177,8 +175,7 @@ func (s *Board) UnMakeMove(move *Move, info *UnMakeInfo) {
 	s.occupied = s.friends | s.enemies
 }
 
-func (s *Board) GeneratePseudoMoves() []Move {
-	var moves []Move
+func (s *Board) GeneratePseudoMoves(moves *[]Move) {
 	var color bool = s.WhiteToMove
 	var from Square
 	for _, piece := range pieceTypes {
@@ -186,18 +183,16 @@ func (s *Board) GeneratePseudoMoves() []Move {
 
 		for pieceBoard != 0 {
 			from = Square(bits.TrailingZeros64(pieceBoard))
-			moves = append(moves, s.GeneratePseudoMovesForPiece(piece, from, color)...)
+			s.GeneratePseudoMovesForPiece(piece, from, color, moves)
 			pieceBoard &= pieceBoard - 1
 		}
 	}
-	return moves
 }
-func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool) []Move {
+func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool, moves *[]Move) {
 	var attacks uint64
 	var to Square
 	var capture Piece
 	var flag MoveFlag
-	var moves []Move
 	switch piece {
 	case Pawn:
 		attacks = s.GetPawnAttacks(from, color) | s.GetPawnPushes(from, color)
@@ -211,14 +206,14 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 					flag = CapturePromotion
 				}
 				for _, promo := range piecePromotions {
-					moves = append(moves, Move{From: from, To: to, Piece: piece,
+					*moves = append(*moves, Move{From: from, To: to, Piece: piece,
 						Capture: capture, Promotion: promo, Flag: flag})
 				}
 			} else if (color && to-from == 16) || (!color && from-to == 16) { //Doble peón
-				moves = append(moves, Move{From: from, To: to,
+				*moves = append(*moves, Move{From: from, To: to,
 					Piece: piece, Flag: DoublePawnPush, Capture: capture})
 			} else if s.Enpassant != 0 && s.Enpassant == to { //Enpassant Capture
-				moves = append(moves, Move{From: from, To: to,
+				*moves = append(*moves, Move{From: from, To: to,
 					Piece: piece, Capture: capture, Flag: EnpassantCapture})
 			} else {
 				if capture == None {
@@ -226,7 +221,7 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 				} else {
 					flag = Capture
 				}
-				moves = append(moves, Move{From: from, To: to, //Pawn move
+				*moves = append(*moves, Move{From: from, To: to, //Pawn move
 					Piece: piece, Flag: flag, Capture: capture}) // en teoría no necesita Capture
 			}
 			attacks &= attacks - 1
@@ -249,7 +244,7 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 			if capture != None {
 				flag = Capture
 			}
-			moves = append(moves, Move{From: from, To: to,
+			*moves = append(*moves, Move{From: from, To: to,
 				Piece: piece, Flag: flag, Capture: capture})
 			attacks &= attacks - 1
 		}
@@ -267,10 +262,9 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 			} else if capture != None { // Si hay captura no hay enroque
 				flag = Capture
 			}
-			moves = append(moves, Move{From: from, To: to,
+			*moves = append(*moves, Move{From: from, To: to,
 				Piece: piece, Flag: flag, Capture: capture})
 			attacks &= attacks - 1
 		}
 	}
-	return moves
 }

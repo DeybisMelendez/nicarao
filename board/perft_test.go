@@ -19,8 +19,8 @@ func TestStartingPos(t *testing.T) {
 		{2, 400},       // Nodos en profundidad 2
 		{3, 8902},      // Nodos en profundidad 3
 		{4, 197281},    // Nodos en profundidad 4
-		{5, 4865609},   // Nodos en profundidad 5 6.5 segundos
-		{6, 119060324}, // Nodos en profundidad 6 Nota: Demasiado lento para llegar al nodo 6
+		{5, 4865609},   // Nodos en profundidad 5
+		{6, 119060324}, // Nodos en profundidad 6 150.6 segundos
 	}
 
 	for _, tc := range testCases {
@@ -32,7 +32,6 @@ func TestStartingPos(t *testing.T) {
 }
 
 func TestPosition2(t *testing.T) {
-	//Init()
 	var board Board = *NewBoard()
 	board.ParseFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -")
 
@@ -45,8 +44,8 @@ func TestPosition2(t *testing.T) {
 		{1, 48},        // Nodos en profundidad 1
 		{2, 2039},      // Nodos en profundidad 2
 		{3, 97862},     // Nodos en profundidad 3
-		{4, 4085603},   // Nodos en profundidad 4 5.5 segundos
-		{5, 193690690}, // Nodos en profundidad 5
+		{4, 4085603},   // Nodos en profundidad 4
+		{5, 193690690}, // Nodos en profundidad 5 241.5 segundos
 		//{6, 8031647685}, // Nodos en profundidad 6
 	}
 
@@ -74,7 +73,7 @@ func TestPosition3(t *testing.T) {
 		{3, 2812},     // Nodos en profundidad 3
 		{4, 43238},    // Nodos en profundidad 4
 		{5, 674624},   // Nodos en profundidad 5
-		{6, 11030083}, // Nodos en profundidad 6 17.4 segundos
+		{6, 11030083}, // Nodos en profundidad 6 17.0 segundos
 	}
 
 	for _, tc := range testCases {
@@ -86,7 +85,6 @@ func TestPosition3(t *testing.T) {
 }
 
 func TestPosition4(t *testing.T) {
-	//Init()
 	var board Board = *NewBoard()
 	board.ParseFEN("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1")
 
@@ -100,7 +98,7 @@ func TestPosition4(t *testing.T) {
 		{2, 264},      // Nodos en profundidad 2
 		{3, 9467},     // Nodos en profundidad 3
 		{4, 422333},   // Nodos en profundidad 4
-		{5, 15833292}, // Nodos en profundidad 5 22.2 segundos
+		{5, 15833292}, // Nodos en profundidad 5 20.5 segundos
 		//{6, 706045033}, // Nodos en profundidad 6
 	}
 
@@ -113,7 +111,6 @@ func TestPosition4(t *testing.T) {
 }
 
 func TestPosition5(t *testing.T) {
-	//Init()
 	var board Board = *NewBoard()
 	board.ParseFEN("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8")
 
@@ -127,7 +124,7 @@ func TestPosition5(t *testing.T) {
 		{2, 1486},     // Nodos en profundidad 2
 		{3, 62379},    // Nodos en profundidad 3
 		{4, 2103487},  // Nodos en profundidad 4 2.9 segundos
-		{5, 89941194}, // Nodos en profundidad 5
+		{5, 89941194}, // Nodos en profundidad 5 118.5 segundos
 	}
 
 	for _, tc := range testCases {
@@ -139,7 +136,6 @@ func TestPosition5(t *testing.T) {
 }
 
 func TestMoves(t *testing.T) {
-	//Init()
 	type testCase struct {
 		nodesCount int64
 		solution   int64

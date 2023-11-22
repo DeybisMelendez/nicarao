@@ -14,7 +14,6 @@ const CastleShort bool = true
 const CastleLong bool = false
 const StartingPos string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-//const everything uint64 = ^(uint64(0))
 const (
 	None Piece = iota
 	Pawn

@@ -47,5 +47,3 @@ func PopBit(bitboard uint64, square Square) uint64 {
 func SetPopBit(bitboard uint64, set Square, pop Square) uint64 {
 	return (1 << set) | bitboard&^(1<<pop)
 }
-
-//TODO: Crear un SetPopBit que mezcle en una sola operación SetBit y PopBit

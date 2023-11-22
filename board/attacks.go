@@ -7,15 +7,15 @@ import (
 func (s *Board) GetBishopAttacks(square Square, color bool) uint64 {
 	var attacks uint64 = Rays["northWest"][square]
 	var blocker int = bits.TrailingZeros64((Rays["northWest"][square] & s.occupied) | 0x8000000000000000)
-	attacks &= ^Rays["northWest"][blocker] // | Rays["northEast"][square]
+	attacks &= ^Rays["northWest"][blocker]
 
 	attacks |= Rays["northEast"][square]
 	blocker = bits.TrailingZeros64((Rays["northEast"][square] & s.occupied) | 0x8000000000000000)
-	attacks &= ^Rays["northEast"][blocker] // | Rays["southWest"][square]
+	attacks &= ^Rays["northEast"][blocker]
 
 	attacks |= Rays["southWest"][square]
 	blocker = 63 - bits.LeadingZeros64((Rays["southWest"][square]&s.occupied)|1)
-	attacks &= ^Rays["southWest"][blocker] // | Rays["southEast"][square]
+	attacks &= ^Rays["southWest"][blocker]
 
 	attacks |= Rays["southEast"][square]
 	blocker = 63 - bits.LeadingZeros64((Rays["southEast"][square]&s.occupied)|1)
