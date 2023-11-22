@@ -18,6 +18,8 @@ type UnMakeInfo struct {
 	Castling  uint8
 }
 
+//Note: IsMoveLegal podría ser una variante de Make/Unmake mas isUnder attack reducido
+
 func (s *Board) MakeMove(move *Move) UnMakeInfo {
 	var color bool = s.WhiteToMove
 	var unMakeInfo UnMakeInfo = UnMakeInfo{

@@ -5,55 +5,41 @@ import (
 )
 
 func (s *Board) GetBishopAttacks(square Square, color bool) uint64 {
-	var attacks uint64
-	var blockerIndex int
-	var occluded uint64
-	attacks |= Rays["northWest"][square]
-	if occluded = Rays["northWest"][square] & s.occupied; occluded != 0 {
-		blockerIndex = bits.TrailingZeros64(occluded)
-		attacks &= ^Rays["northWest"][blockerIndex]
-	}
+	var attacks uint64 = Rays["northWest"][square]
+	var blocker int = bits.TrailingZeros64((Rays["northWest"][square] & s.occupied) | 0x8000000000000000)
+	attacks &= ^Rays["northWest"][blocker] // | Rays["northEast"][square]
+
 	attacks |= Rays["northEast"][square]
-	if occluded = Rays["northEast"][square] & s.occupied; occluded != 0 {
-		blockerIndex = bits.TrailingZeros64(occluded)
-		attacks &= ^Rays["northEast"][blockerIndex]
-	}
+	blocker = bits.TrailingZeros64((Rays["northEast"][square] & s.occupied) | 0x8000000000000000)
+	attacks &= ^Rays["northEast"][blocker] // | Rays["southWest"][square]
+
 	attacks |= Rays["southWest"][square]
-	if occluded = Rays["southWest"][square] & s.occupied; occluded != 0 {
-		blockerIndex = 63 - bits.LeadingZeros64(occluded)
-		attacks &= ^Rays["southWest"][blockerIndex]
-	}
+	blocker = 63 - bits.LeadingZeros64((Rays["southWest"][square]&s.occupied)|1)
+	attacks &= ^Rays["southWest"][blocker] // | Rays["southEast"][square]
+
 	attacks |= Rays["southEast"][square]
-	if occluded = Rays["southEast"][square] & s.occupied; occluded != 0 {
-		blockerIndex = 63 - bits.LeadingZeros64(occluded)
-		attacks &= ^Rays["southEast"][blockerIndex]
-	}
+	blocker = 63 - bits.LeadingZeros64((Rays["southEast"][square]&s.occupied)|1)
+	attacks &= ^Rays["southEast"][blocker]
+
 	return s.filterAttacks(attacks, color)
 }
 func (s *Board) GetRookAttacks(square Square, color bool) uint64 {
-	var attacks uint64
-	var blockerIndex int
-	var occluded uint64
-	attacks |= Rays["north"][square]
-	if occluded = Rays["north"][square] & s.occupied; occluded != 0 {
-		blockerIndex = bits.TrailingZeros64(occluded)
-		attacks &= ^Rays["north"][blockerIndex]
-	}
+	var attacks uint64 = Rays["north"][square]
+	var blocker int = bits.TrailingZeros64((Rays["north"][square] & s.occupied) | 0x8000000000000000)
+	attacks &= ^Rays["north"][blocker]
+
 	attacks |= Rays["east"][square]
-	if occluded = Rays["east"][square] & s.occupied; occluded != 0 {
-		blockerIndex = bits.TrailingZeros64(occluded)
-		attacks &= ^Rays["east"][blockerIndex]
-	}
+	blocker = bits.TrailingZeros64((Rays["east"][square] & s.occupied) | 0x8000000000000000)
+	attacks &= ^Rays["east"][blocker]
+
 	attacks |= Rays["south"][square]
-	if occluded = Rays["south"][square] & s.occupied; occluded != 0 {
-		blockerIndex = 63 - bits.LeadingZeros64(occluded)
-		attacks &= ^Rays["south"][blockerIndex]
-	}
+	blocker = 63 - bits.LeadingZeros64((Rays["south"][square]&s.occupied)|1)
+	attacks &= ^Rays["south"][blocker]
+
 	attacks |= Rays["west"][square]
-	if occluded = Rays["west"][square] & s.occupied; occluded != 0 {
-		blockerIndex = 63 - bits.LeadingZeros64(occluded)
-		attacks &= ^Rays["west"][blockerIndex]
-	}
+	blocker = 63 - bits.LeadingZeros64((Rays["west"][square]&s.occupied)|1)
+	attacks &= ^Rays["west"][blocker]
+
 	return s.filterAttacks(attacks, color)
 }
 
