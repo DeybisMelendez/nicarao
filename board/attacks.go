@@ -108,30 +108,22 @@ func (s *Board) GenerateAttacksForPiece(piece Piece, from Square, color bool) ui
 }
 
 func (s *Board) IsUnderAttack(square Square, color bool) bool {
-	var knightAttacks uint64 = s.GetKnightAttacks(square, color) & s.Bitboards[!color][Knight]
-	var rookQueenAttacks uint64 = s.GetRookAttacks(square, color) & (s.Bitboards[!color][Rook] | s.Bitboards[!color][Queen])
-	var bishopQueenAttacks uint64 = s.GetBishopAttacks(square, color) & (s.Bitboards[!color][Bishop] | s.Bitboards[!color][Queen])
-	var pawnAttacks uint64 = s.GetPawnAttacks(square, color) & s.Bitboards[!color][Pawn]
-	var kingAttacks uint64 = KingMasks[square] & s.Bitboards[!color][King]
-	return knightAttacks|rookQueenAttacks|bishopQueenAttacks|pawnAttacks|kingAttacks != 0
-	/*for _, piece := range pieceTypes {
-
-		var attackerBB uint64 = s.Bitboards[color][piece]
-		//TODO: Podría ser mas eficiente precalcular los ataques en la generación de movimientos y guardarlo en el board
-		for attackerBB != 0 {
-			var from Square = Square(bits.TrailingZeros64(attackerBB))
-			var attacks uint64 = s.GenerateAttacksForPiece(piece, from, color)
-			if attacks&pieceBB != 0 {
-				return true
-			}
-			attackerBB &= attackerBB - 1
-		}
+	if s.GetBishopAttacks(square, color)&(s.Bitboards[!color][Bishop]|s.Bitboards[!color][Queen]) != 0 {
+		return true
 	}
-	return false*/
+	if s.GetRookAttacks(square, color)&(s.Bitboards[!color][Rook]|s.Bitboards[!color][Queen]) != 0 {
+		return true
+	}
+	if s.GetKnightAttacks(square, color)&s.Bitboards[!color][Knight] != 0 {
+		return true
+	}
+	if s.GetPawnAttacks(square, color)&s.Bitboards[!color][Pawn] != 0 {
+		return true
+	}
+	return KingMasks[square]&s.Bitboards[!color][King] != 0
 }
 func (s *Board) AnyUnderAttack(color bool, squares ...Square) bool {
 	for _, square := range squares {
-		//var pieceBB uint64 = SetBit(0, square)
 		if s.IsUnderAttack(square, color) {
 			return true
 		}
