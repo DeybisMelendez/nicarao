@@ -133,6 +133,30 @@ func TestPosition5(t *testing.T) {
 		}
 	}
 }
+func TestPosition6(t *testing.T) {
+	var board Board = *NewBoard()
+	board.ParseFEN("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 en - - 0 10 ")
+
+	type testCase struct {
+		depth      int
+		nodesCount int64
+	}
+
+	testCases := []testCase{
+		{1, 46},      // Nodos en profundidad 1
+		{2, 2079},    // Nodos en profundidad 2
+		{3, 89890},   // Nodos en profundidad 3
+		{4, 3894594}, // Nodos en profundidad 4
+		//{5, 164075551}, // Nodos en profundidad 5 113.4 segundos
+	}
+
+	for _, tc := range testCases {
+		count := Perft(&board, tc.depth)
+		if count != tc.nodesCount {
+			t.Errorf("Profundidad: %d, Solución: %d nodos, Resultado: %d nodos", tc.depth, tc.nodesCount, count)
+		}
+	}
+}
 
 //https://www.chessprogramming.net/perfect-perft/
 func TestTalkChess(t *testing.T) {

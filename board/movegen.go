@@ -88,11 +88,12 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 				flag = KingCastle
 			} else if dist == -2 { // Enroque largo
 				flag = QueenCastle
-			} else if s.IsCapture(to) { // Si hay captura no hay enroque
-				flag = Capture
-				capture = s.GetPiece(to, !s.WhiteToMove)
 			} else {
 				flag = QuietMoves
+				if s.IsCapture(to) {
+					flag = Capture
+					capture = s.GetPiece(to, !s.WhiteToMove)
+				}
 			}
 			moves.Push(NewMove(piece, from, to, capture, 0, flag))
 			attacks &= attacks - 1
