@@ -14,12 +14,12 @@ func TestStartingPos(t *testing.T) {
 	}
 
 	testCases := []testCase{
-		{1, 20},        // Nodos en profundidad 1
-		{2, 400},       // Nodos en profundidad 2
-		{3, 8902},      // Nodos en profundidad 3
-		{4, 197281},    // Nodos en profundidad 4
-		{5, 4865609},   // Nodos en profundidad 5
-		{6, 119060324}, // Nodos en profundidad 6 148.4 segundos
+		{1, 20},      // Nodos en profundidad 1
+		{2, 400},     // Nodos en profundidad 2
+		{3, 8902},    // Nodos en profundidad 3
+		{4, 197281},  // Nodos en profundidad 4
+		{5, 4865609}, // Nodos en profundidad 5
+		//{6, 119060324}, // Nodos en profundidad 6 147.7 segundos
 	}
 
 	for _, tc := range testCases {
@@ -40,11 +40,11 @@ func TestPosition2(t *testing.T) {
 	}
 
 	testCases := []testCase{
-		{1, 48},        // Nodos en profundidad 1
-		{2, 2039},      // Nodos en profundidad 2
-		{3, 97862},     // Nodos en profundidad 3
-		{4, 4085603},   // Nodos en profundidad 4
-		{5, 193690690}, // Nodos en profundidad 5 236.1 segundos
+		{1, 48},      // Nodos en profundidad 1
+		{2, 2039},    // Nodos en profundidad 2
+		{3, 97862},   // Nodos en profundidad 3
+		{4, 4085603}, // Nodos en profundidad 4
+		//{5, 193690690}, // Nodos en profundidad 5 235.8 segundos
 		//{6, 8031647685}, // Nodos en profundidad 6
 	}
 
@@ -67,12 +67,12 @@ func TestPosition3(t *testing.T) {
 	}
 
 	testCases := []testCase{
-		{1, 14},       // Nodos en profundidad 1
-		{2, 191},      // Nodos en profundidad 2
-		{3, 2812},     // Nodos en profundidad 3
-		{4, 43238},    // Nodos en profundidad 4
-		{5, 674624},   // Nodos en profundidad 5
-		{6, 11030083}, // Nodos en profundidad 6 16.4 segundos
+		{1, 14},     // Nodos en profundidad 1
+		{2, 191},    // Nodos en profundidad 2
+		{3, 2812},   // Nodos en profundidad 3
+		{4, 43238},  // Nodos en profundidad 4
+		{5, 674624}, // Nodos en profundidad 5
+		//{6, 11030083}, // Nodos en profundidad 6 15.9 segundos
 	}
 
 	for _, tc := range testCases {
@@ -119,14 +119,50 @@ func TestPosition5(t *testing.T) {
 	}
 
 	testCases := []testCase{
-		{1, 44},       // Nodos en profundidad 1
-		{2, 1486},     // Nodos en profundidad 2
-		{3, 62379},    // Nodos en profundidad 3
-		{4, 2103487},  // Nodos en profundidad 4
-		{5, 89941194}, // Nodos en profundidad 5 113.4 segundos
+		{1, 44},      // Nodos en profundidad 1
+		{2, 1486},    // Nodos en profundidad 2
+		{3, 62379},   // Nodos en profundidad 3
+		{4, 2103487}, // Nodos en profundidad 4
+		//{5, 89941194}, // Nodos en profundidad 5 113.4 segundos
 	}
 
 	for _, tc := range testCases {
+		count := Perft(&board, tc.depth)
+		if count != tc.nodesCount {
+			t.Errorf("Profundidad: %d, Solución: %d nodos, Resultado: %d nodos", tc.depth, tc.nodesCount, count)
+		}
+	}
+}
+
+//https://www.chessprogramming.net/perfect-perft/
+func TestTalkChess(t *testing.T) {
+
+	type testCase struct {
+		depth      int
+		nodesCount int64
+		fen        string
+	}
+
+	testCases := []testCase{
+		{6, 1134888, "3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1"},
+		{6, 1015133, "8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1"},
+		{6, 1440467, "8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1"},
+		{6, 661072, "5k2/8/8/8/8/8/8/4K2R w K - 0 1"},
+		{6, 803711, "3k4/8/8/8/8/8/8/R3K3 w Q - 0 1"},
+		{4, 1274206, "r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 1"},
+		{4, 1720476, "r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 1"},
+		{6, 3821001, "2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 1"},
+		{5, 1004658, "8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1"},
+		{6, 217342, "4k3/1P6/8/8/8/8/K7/8 w - - 0 1"},
+		{6, 92683, "8/P1k5/K7/8/8/8/8/8 w - - 0 1"},
+		{6, 2217, "K1k5/8/P7/8/8/8/8/8 w - - 0 1"},
+		{7, 567584, "8/k1P5/8/1K6/8/8/8/8 w - - 0 1"},
+		{4, 23527, "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1"},
+	}
+
+	for _, tc := range testCases {
+		var board Board = *NewBoard()
+		board.ParseFEN(tc.fen)
 		count := Perft(&board, tc.depth)
 		if count != tc.nodesCount {
 			t.Errorf("Profundidad: %d, Solución: %d nodos, Resultado: %d nodos", tc.depth, tc.nodesCount, count)

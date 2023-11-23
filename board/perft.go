@@ -8,17 +8,17 @@ func Perft(b *Board, depth int) int64 {
 	}
 
 	var totalNodes int64
-	var moves []Move
+	var moves MoveList = MoveList{}
 	b.GeneratePseudoMoves(&moves)
 	var color bool = b.WhiteToMove
 	var kingSquare Square
-	for _, move := range moves {
-		b.MakeMove(move)
+	for i := uint8(0); i < moves.Index; i++ {
+		b.MakeMove(moves.List[i])
 		kingSquare = Square(bits.TrailingZeros64(b.Bitboards[color][King]))
 		if !b.IsUnderAttack(kingSquare, color) {
 			totalNodes += Perft(b, depth-1)
 		}
-		b.UnMakeMove(move)
+		b.UnMakeMove(moves.List[i])
 	}
 	return totalNodes
 }

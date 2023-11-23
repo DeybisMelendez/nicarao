@@ -17,3 +17,8 @@ func popUnMakeInfo() (Square, uint8) {
 	unMakeInfoIndex--
 	return unMakeInfoList[unMakeInfoIndex].Enpassant, unMakeInfoList[unMakeInfoIndex].Castling
 }
+
+func clearUnMakeInfo() {
+	//unMakeInfoList = [MaxPly]UnMakeInfo{}
+	unMakeInfoIndex = 0
+}

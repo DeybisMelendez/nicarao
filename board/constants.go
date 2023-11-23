@@ -13,7 +13,6 @@ const Black bool = false
 const CastleShort bool = true
 const CastleLong bool = false
 const StartingPos string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-const MaxPly uint = 64
 const (
 	None Piece = iota
 	Pawn

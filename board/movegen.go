@@ -2,7 +2,7 @@ package board
 
 import "math/bits"
 
-func (s *Board) GeneratePseudoMoves(moves *[]Move) {
+func (s *Board) GeneratePseudoMoves(moves *MoveList) {
 	var color bool = s.WhiteToMove
 	var from Square
 	var pieceBoard uint64
@@ -17,7 +17,7 @@ func (s *Board) GeneratePseudoMoves(moves *[]Move) {
 	}
 }
 
-func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool, moves *[]Move) {
+func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool, moves *MoveList) {
 	var attacks uint64
 	var to Square
 	var capture Piece
@@ -35,19 +35,19 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 					flag = CapturePromotion
 				}
 				for _, promo := range piecePromotions {
-					*moves = append(*moves, NewMove(piece, from, to, capture, promo, flag))
+					moves.Push(NewMove(piece, from, to, capture, promo, flag))
 				}
 			} else if (color && to-from == 16) || (!color && from-to == 16) { //Doble peón
-				*moves = append(*moves, NewMove(piece, from, to, capture, 0, DoublePawnPush))
+				moves.Push(NewMove(piece, from, to, capture, 0, DoublePawnPush))
 			} else if s.Enpassant != 0 && s.Enpassant == to { //Enpassant Capture
-				*moves = append(*moves, NewMove(piece, from, to, capture, 0, EnpassantCapture))
+				moves.Push(NewMove(piece, from, to, capture, 0, EnpassantCapture))
 			} else {
 				if capture == None {
 					flag = QuietMoves
 				} else {
 					flag = Capture
 				}
-				*moves = append(*moves, NewMove(piece, from, to, capture, 0, flag)) // en teoría no necesita Capture
+				moves.Push(NewMove(piece, from, to, capture, 0, flag))
 			}
 			attacks &= attacks - 1
 		}
@@ -69,7 +69,7 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 			if capture != None {
 				flag = Capture
 			}
-			*moves = append(*moves, NewMove(piece, from, to, capture, 0, flag))
+			moves.Push(NewMove(piece, from, to, capture, 0, flag))
 			attacks &= attacks - 1
 		}
 	case King:
@@ -86,7 +86,7 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 			} else if capture != None { // Si hay captura no hay enroque
 				flag = Capture
 			}
-			*moves = append(*moves, NewMove(piece, from, to, capture, 0, flag))
+			moves.Push(NewMove(piece, from, to, capture, 0, flag))
 			attacks &= attacks - 1
 		}
 	}
