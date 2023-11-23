@@ -44,7 +44,7 @@ func TestPosition2(t *testing.T) {
 		{2, 2039},      // Nodos en profundidad 2
 		{3, 97862},     // Nodos en profundidad 3
 		{4, 4085603},   // Nodos en profundidad 4
-		{5, 193690690}, // Nodos en profundidad 5 238.4 segundos
+		{5, 193690690}, // Nodos en profundidad 5 236.1 segundos
 		//{6, 8031647685}, // Nodos en profundidad 6
 	}
 
@@ -72,7 +72,7 @@ func TestPosition3(t *testing.T) {
 		{3, 2812},     // Nodos en profundidad 3
 		{4, 43238},    // Nodos en profundidad 4
 		{5, 674624},   // Nodos en profundidad 5
-		{6, 11030083}, // Nodos en profundidad 6 16.1 segundos
+		{6, 11030083}, // Nodos en profundidad 6 16.4 segundos
 	}
 
 	for _, tc := range testCases {
@@ -97,7 +97,7 @@ func TestPosition4(t *testing.T) {
 		{2, 264},      // Nodos en profundidad 2
 		{3, 9467},     // Nodos en profundidad 3
 		{4, 422333},   // Nodos en profundidad 4
-		{5, 15833292}, // Nodos en profundidad 5 20 segundos
+		{5, 15833292}, // Nodos en profundidad 5 20.3 segundos
 		//{6, 706045033}, // Nodos en profundidad 6
 	}
 
@@ -123,7 +123,7 @@ func TestPosition5(t *testing.T) {
 		{2, 1486},     // Nodos en profundidad 2
 		{3, 62379},    // Nodos en profundidad 3
 		{4, 2103487},  // Nodos en profundidad 4
-		{5, 89941194}, // Nodos en profundidad 5 116.8 segundos
+		{5, 89941194}, // Nodos en profundidad 5 113.4 segundos
 	}
 
 	for _, tc := range testCases {

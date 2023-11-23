@@ -1,16 +1,8 @@
 package board
 
-type UnMakeInfo struct {
-	Enpassant Square
-	Castling  uint8
-}
-
-func (s *Board) MakeMove(move Move) UnMakeInfo {
+func (s *Board) MakeMove(move Move) {
 	var color bool = s.WhiteToMove
-	var unMakeInfo UnMakeInfo = UnMakeInfo{
-		Enpassant: s.Enpassant,
-		Castling:  s.Castling,
-	}
+	pushUnMakeInfo(s.Enpassant, s.Castling)
 	var piece Piece = move.Piece()
 	var capture Piece = move.Capture()
 	var promo = move.Promotion()
@@ -100,10 +92,9 @@ func (s *Board) MakeMove(move Move) UnMakeInfo {
 	s.friends = s.enemies
 	s.enemies = copyFriends
 	s.occupied = s.friends | s.enemies
-	return unMakeInfo
 }
 
-func (s *Board) UnMakeMove(move Move, info *UnMakeInfo) {
+func (s *Board) UnMakeMove(move Move) {
 	var color bool = !s.WhiteToMove
 	var copyFriends uint64 = s.friends
 	var piece = move.Piece()
@@ -113,8 +104,7 @@ func (s *Board) UnMakeMove(move Move, info *UnMakeInfo) {
 	var from = move.From()
 	s.friends = s.enemies
 	s.enemies = copyFriends
-	s.Enpassant = info.Enpassant
-	s.Castling = info.Castling
+	s.Enpassant, s.Castling = popUnMakeInfo()
 
 	switch move.Flag() {
 	case QuietMoves, DoublePawnPush:
