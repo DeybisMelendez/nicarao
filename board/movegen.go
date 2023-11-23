@@ -25,32 +25,33 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 	var capture Piece
 	switch piece {
 	case Pawn:
-		attacks = s.GetPawnAttacks(from, color) | s.GetPawnPushes(from, color)
+		attacks = s.GetPawnAttacks(from, color) // | s.GetPawnPushes(from, color)
 		for attacks != 0 {
 			to = Square(bits.TrailingZeros64(attacks))
-			capture = None
-			if (to < A2 && !color) || (to > H7 && color) { //Coronación de peón
-				if s.IsCapture(to) {
-					flag = CapturePromotion
-					capture = s.GetPiece(to, !s.WhiteToMove)
-				} else {
-					flag = Promotion
-				}
+			capture = s.GetPiece(to, !s.WhiteToMove)
+			if (SetBit(0, to)&Rank1 != 0) || (SetBit(0, to)&Rank8 != 0) { //Coronación de peón
 				for _, promo := range piecePromotions {
-					moves.Push(NewMove(piece, from, to, capture, promo, flag))
+					moves.Push(NewMove(piece, from, to, capture, promo, CapturePromotion))
 				}
-			} else if (color && to-from == 16) || (!color && from-to == 16) { //Doble peón
-				moves.Push(NewMove(piece, from, to, capture, 0, DoublePawnPush))
-			} else if s.Enpassant != 0 && s.Enpassant == to { //Enpassant Capture
-				moves.Push(NewMove(piece, from, to, capture, 0, EnpassantCapture))
+			} else if s.Enpassant == to { //Captura al paso
+				moves.Push(NewMove(piece, from, to, 0, 0, EnpassantCapture))
 			} else {
-				if s.IsCapture(to) {
-					flag = Capture
-					capture = s.GetPiece(to, !s.WhiteToMove)
-				} else {
-					flag = QuietMoves
+				moves.Push(NewMove(piece, from, to, capture, 0, Capture)) //Capturas de peón
+			}
+			attacks &= attacks - 1
+		}
+		attacks = s.GetPawnPushes(from, color)
+		// No hay capturas en los movimientos de peones
+		for attacks != 0 {
+			to = Square(bits.TrailingZeros64(attacks))
+			if (color && to-from == 16) || (!color && from-to == 16) { //Doble peón
+				moves.Push(NewMove(piece, from, to, 0, 0, DoublePawnPush))
+			} else if (SetBit(0, to)&Rank1 != 0) || (SetBit(0, to)&Rank8 != 0) { //Coronación de peón
+				for _, promo := range piecePromotions {
+					moves.Push(NewMove(piece, from, to, 0, promo, Promotion))
 				}
-				moves.Push(NewMove(piece, from, to, capture, 0, flag))
+			} else {
+				moves.Push(NewMove(piece, from, to, capture, 0, QuietMoves))
 			}
 			attacks &= attacks - 1
 		}
