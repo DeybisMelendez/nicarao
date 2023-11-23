@@ -90,6 +90,10 @@ func (s *Board) GetPiece(square Square, color bool) Piece {
 	return None
 }
 
+func (s *Board) IsCapture(square Square) bool {
+	return s.occupied&SetBit(0, square) != 0
+}
+
 //CanCastle devuelve true si el jugador indicado tiene derecho a enrocar corto
 func (s *Board) CanCastle(color bool, isShort bool) bool {
 	return castling[color][isShort]&s.Castling != 0

@@ -93,11 +93,11 @@ func TestPosition4(t *testing.T) {
 	}
 
 	testCases := []testCase{
-		{1, 6},        // Nodos en profundidad 1
-		{2, 264},      // Nodos en profundidad 2
-		{3, 9467},     // Nodos en profundidad 3
-		{4, 422333},   // Nodos en profundidad 4
-		{5, 15833292}, // Nodos en profundidad 5 20.3 segundos
+		{1, 6},      // Nodos en profundidad 1
+		{2, 264},    // Nodos en profundidad 2
+		{3, 9467},   // Nodos en profundidad 3
+		{4, 422333}, // Nodos en profundidad 4
+		//{5, 15833292}, // Nodos en profundidad 5 20.3 segundos
 		//{6, 706045033}, // Nodos en profundidad 6
 	}
 

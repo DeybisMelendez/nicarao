@@ -13,23 +13,18 @@ func NewMove(piece Piece, from Square, to Square, capture Piece, promo Piece, fl
 	return move
 }
 
+//GETTERS
 func (m *Move) Piece() Piece {
 	return Piece(*m & 0x7)
 }
 
 func (m *Move) From() Square {
 	var sq = Square((*m >> 3) & 0x3F)
-	if sq > 63 {
-		panic(sq)
-	}
 	return sq
 }
 
 func (m *Move) To() Square {
 	var sq = Square((*m >> 9) & 0x3F)
-	if sq > 63 {
-		panic(sq)
-	}
 	return sq
 }
 
@@ -43,4 +38,30 @@ func (m *Move) Promotion() Piece {
 
 func (m *Move) Flag() MoveFlag {
 	return MoveFlag((*m >> 21) & 0x7)
+}
+
+//SETTERS
+
+func (m *Move) SetPiece(piece Piece) {
+	*m = Move(uint32(piece)&0x7 | (uint32(*m) &^ 0x7))
+}
+
+func (m *Move) SetFrom(square Square) {
+	*m = Move((uint32(square) & 0x3F << 3) | (uint32(*m) &^ (0x3F << 3)))
+}
+
+func (m *Move) SetTo(square Square) {
+	*m = Move((uint32(square) & 0x3F << 9) | (uint32(*m) &^ (0x3F << 9)))
+}
+
+func (m *Move) SetCapture(piece Piece) {
+	*m = Move((uint32(piece) & 0x7 << 15) | (uint32(*m) &^ (0x7 << 15)))
+}
+
+func (m *Move) SetPromotion(piece Piece) {
+	*m = Move((uint32(piece) & 0x7 << 18) | (uint32(*m) &^ (0x7 << 18)))
+}
+
+func (m *Move) SetFlag(flag MoveFlag) {
+	*m = Move((uint32(flag) & 0x7 << 21) | (uint32(*m) &^ (0x7 << 21)))
 }

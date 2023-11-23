@@ -20,19 +20,20 @@ func (s *Board) GeneratePseudoMoves(moves *MoveList) {
 func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool, moves *MoveList) {
 	var attacks uint64
 	var to Square
-	var capture Piece
 	var flag MoveFlag
+	var capture Piece
 	switch piece {
 	case Pawn:
 		attacks = s.GetPawnAttacks(from, color) | s.GetPawnPushes(from, color)
 		for attacks != 0 {
 			to = Square(bits.TrailingZeros64(attacks))
-			capture = s.GetPiece(to, !s.WhiteToMove)
+			capture = None
 			if (to < A2 && !color) || (to > H7 && color) { //Coronación de peón
-				if capture == None {
-					flag = Promotion
-				} else {
+				if s.IsCapture(to) {
 					flag = CapturePromotion
+					capture = s.GetPiece(to, !s.WhiteToMove)
+				} else {
+					flag = Promotion
 				}
 				for _, promo := range piecePromotions {
 					moves.Push(NewMove(piece, from, to, capture, promo, flag))
@@ -42,10 +43,11 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 			} else if s.Enpassant != 0 && s.Enpassant == to { //Enpassant Capture
 				moves.Push(NewMove(piece, from, to, capture, 0, EnpassantCapture))
 			} else {
-				if capture == None {
-					flag = QuietMoves
-				} else {
+				if s.IsCapture(to) {
 					flag = Capture
+					capture = s.GetPiece(to, !s.WhiteToMove)
+				} else {
+					flag = QuietMoves
 				}
 				moves.Push(NewMove(piece, from, to, capture, 0, flag))
 			}
@@ -64,10 +66,12 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 		}
 		for attacks != 0 {
 			to = Square(bits.TrailingZeros64(attacks))
-			capture = s.GetPiece(to, !s.WhiteToMove)
-			flag = QuietMoves
-			if capture != None {
+			capture = None
+			if s.IsCapture(to) {
 				flag = Capture
+				capture = s.GetPiece(to, !s.WhiteToMove)
+			} else {
+				flag = QuietMoves
 			}
 			moves.Push(NewMove(piece, from, to, capture, 0, flag))
 			attacks &= attacks - 1
@@ -76,15 +80,17 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 		attacks = s.GetKingAttacks(from, color)
 		for attacks != 0 {
 			to = Square(bits.TrailingZeros64(attacks))
-			capture = s.GetPiece(to, !s.WhiteToMove)
-			flag = QuietMoves
+			capture = None
 			var dist int8 = int8(to) - int8(from)
 			if dist == 2 { // Enroque corto
 				flag = KingCastle
 			} else if dist == -2 { // Enroque largo
 				flag = QueenCastle
-			} else if capture != None { // Si hay captura no hay enroque
+			} else if s.IsCapture(to) { // Si hay captura no hay enroque
 				flag = Capture
+				capture = s.GetPiece(to, !s.WhiteToMove)
+			} else {
+				flag = QuietMoves
 			}
 			moves.Push(NewMove(piece, from, to, capture, 0, flag))
 			attacks &= attacks - 1
