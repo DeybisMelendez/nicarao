@@ -8,10 +8,14 @@ type UnMakeInfo struct {
 var unMakeInfoList [MaxPly]UnMakeInfo
 var unMakeInfoIndex int
 
-func pushUnMakeInfo(enpassant Square, castling uint8) {
+func pushUnMakeInfo() {
+	unMakeInfoIndex++
+}
+
+func saveUnMakeInfo(enpassant Square, castling uint8) {
 	unMakeInfoList[unMakeInfoIndex].Enpassant = enpassant
 	unMakeInfoList[unMakeInfoIndex].Castling = castling
-	unMakeInfoIndex++
+	//unMakeInfoIndex++
 }
 func popUnMakeInfo() (Square, uint8) {
 	unMakeInfoIndex--

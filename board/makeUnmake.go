@@ -2,7 +2,8 @@ package board
 
 func (s *Board) MakeMove(move Move) {
 	var color bool = s.WhiteToMove
-	pushUnMakeInfo(s.Enpassant, s.Castling)
+	pushUnMakeInfo()
+	//pushUnMakeInfo(s.Enpassant, s.Castling)
 	var piece Piece = move.Piece()
 	var capture Piece = move.Capture()
 	var promo = move.Promotion()
