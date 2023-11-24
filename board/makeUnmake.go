@@ -1,8 +1,8 @@
 package board
 
 func (s *Board) MakeMove(move Move) {
+	s.pushUnMakeInfo()
 	var color bool = s.WhiteToMove
-	pushUnMakeInfo()
 	var piece Piece = move.Piece()
 	var capture Piece = move.Capture()
 	var promo = move.Promotion()
@@ -98,6 +98,7 @@ func (s *Board) MakeMove(move Move) {
 }
 
 func (s *Board) UnMakeMove(move Move) {
+	s.popUnMakeInfo()
 	var color bool = !s.WhiteToMove
 	var copyFriends uint64 = s.friends
 	var piece = move.Piece()
@@ -110,7 +111,6 @@ func (s *Board) UnMakeMove(move Move) {
 	var fromToBB uint64 = fromBB ^ toBB
 	s.friends = s.enemies
 	s.enemies = copyFriends
-	s.Enpassant, s.Castling = popUnMakeInfo()
 
 	switch move.Flag() {
 	case QuietMoves, DoublePawnPush:

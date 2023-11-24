@@ -5,24 +5,21 @@ type UnMakeInfo struct {
 	Castling  uint8
 }
 
-var unMakeInfoList [MaxPly]UnMakeInfo
-var unMakeInfoIndex int
-
-func pushUnMakeInfo() {
-	unMakeInfoIndex++
+func (s *Board) pushUnMakeInfo() {
+	s.unMakeInfoIndex++
 }
 
-func saveUnMakeInfo(enpassant Square, castling uint8) {
-	unMakeInfoList[unMakeInfoIndex].Enpassant = enpassant
-	unMakeInfoList[unMakeInfoIndex].Castling = castling
-	//unMakeInfoIndex++
-}
-func popUnMakeInfo() (Square, uint8) {
-	unMakeInfoIndex--
-	return unMakeInfoList[unMakeInfoIndex].Enpassant, unMakeInfoList[unMakeInfoIndex].Castling
+func (s *Board) saveUnMakeInfo() {
+	s.unMakeInfoList[s.unMakeInfoIndex].Enpassant = s.Enpassant
+	s.unMakeInfoList[s.unMakeInfoIndex].Castling = s.Castling
 }
 
-func clearUnMakeInfo() {
-	//unMakeInfoList = [MaxPly]UnMakeInfo{}
+func (s *Board) popUnMakeInfo() {
+	s.unMakeInfoIndex--
+	s.Enpassant = s.unMakeInfoList[s.unMakeInfoIndex].Enpassant
+	s.Castling = s.unMakeInfoList[s.unMakeInfoIndex].Castling
+}
+
+/*func clearUnMakeInfo() {
 	unMakeInfoIndex = 0
-}
+}*/

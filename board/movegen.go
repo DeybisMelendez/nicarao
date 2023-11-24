@@ -3,7 +3,7 @@ package board
 import "math/bits"
 
 func (s *Board) GeneratePseudoMoves(moves *MoveList) {
-	saveUnMakeInfo(s.Enpassant, s.Castling)
+	s.saveUnMakeInfo()
 	var color bool = s.WhiteToMove
 	var from Square
 	var pieceBoard uint64

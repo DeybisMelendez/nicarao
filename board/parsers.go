@@ -44,7 +44,7 @@ func (s *Board) ParseFEN(fen string) error {
 	s.friends = s.GetAll(s.WhiteToMove)
 	s.enemies = s.GetAll(!s.WhiteToMove)
 	s.occupied = s.friends | s.enemies
-	clearUnMakeInfo()
+	//clearUnMakeInfo()
 	return nil
 }
 

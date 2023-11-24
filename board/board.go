@@ -2,6 +2,9 @@ package board
 
 import "fmt"
 
+//var unMakeInfoList [MaxPly]UnMakeInfo
+//var unMakeInfoIndex int
+
 //Board contiene todos los elementos necesarios para representar un tablero de ajedrez
 type Board struct {
 	//WhiteToMove indica el turno del jugador, true para blancas y false para negras
@@ -28,6 +31,10 @@ type Board struct {
 	//occupied es un bitboard útil para calcular movimientos posibles,
 	//se debe actualizar al realizar un movimiento nuevo
 	occupied uint64
+	//Historial que contiene información irreversible como Castling y Enpassant
+	unMakeInfoList [MaxPly]UnMakeInfo
+	//Index del último cambio realizado en el historial UnMakeInfoList
+	unMakeInfoIndex int
 }
 
 func NewBoard() *Board {
@@ -71,49 +78,4 @@ func (s *Board) Print() {
 		fmt.Printf("\n")
 	}
 	fmt.Printf("\n")
-}
-
-//GetAll devuelve un bitboard con todas las casillas ocupadas del jugador indicado
-func (s *Board) GetAll(color bool) uint64 {
-	return s.Bitboards[color][Pawn] | s.Bitboards[color][Knight] | s.Bitboards[color][Bishop] | s.Bitboards[color][Rook] | s.Bitboards[color][Queen] | s.Bitboards[color][King]
-}
-
-//GetPiece devuelve la pieza que está controlando la casilla indicada
-func (s *Board) GetPiece(square Square, color bool) Piece {
-	var mask uint64 = 1 << square
-	//var mask uint64 = SquareToBB[square]
-	for _, piece := range pieceTypes {
-		if s.Bitboards[color][piece]&mask != 0 {
-			return piece
-		}
-	}
-	return None
-}
-
-func (s *Board) IsCapture(square Square) bool {
-	return s.occupied&(1<<square) != 0
-}
-
-//CanCastle devuelve true si el jugador indicado tiene derecho a enrocar corto
-func (s *Board) CanCastle(color bool, isShort bool) bool {
-	return castling[color][isShort]&s.Castling != 0
-}
-
-//UpdateCastling cambia el derecho a enroque al nuevo estado
-func (s *Board) UpdateCastling(Castling uint8) {
-	s.Castling |= Castling
-}
-
-//RemoveCastling elimina un derecho de enroque según se indique
-func (s *Board) RemoveCastling(Castling uint8) {
-	s.Castling &= ^Castling
-}
-
-//HandleCastle controla la modificación del derecho a enroque
-func (s *Board) HandleCastle(color bool, isShort bool, remove bool) {
-	if remove {
-		s.RemoveCastling(castling[color][isShort])
-	} else {
-		s.UpdateCastling(castling[color][isShort])
-	}
 }

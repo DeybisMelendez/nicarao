@@ -12,7 +12,6 @@ var onlyRank = [8]uint64{
 	0xFF, 0xFF00, 0xFF0000, 0xFF000000,
 	0xFF00000000, 0xFF0000000000, 0xFF000000000000, 0xFF00000000000000}*/
 
-//TODO: Añadir una mascara de array que marque 1 casilla ej: SetBit(0, Square)
 var castlingMask map[bool]map[bool]uint64
 var PawnPushesMasks map[bool][]uint64
 var PawnAttacksMasks map[bool][]uint64

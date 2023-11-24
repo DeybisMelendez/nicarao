@@ -20,8 +20,10 @@ func (s *Board) GetBishopAttacks(square Square, color bool) uint64 {
 	attacks |= Rays["southEast"][square]
 	blocker = 63 - bits.LeadingZeros64((Rays["southEast"][square]&s.occupied)|1)
 	attacks &= ^Rays["southEast"][blocker]
-
-	return s.filterAttacks(attacks, color)
+	if color == s.WhiteToMove {
+		return attacks & ^s.friends
+	}
+	return attacks & ^s.enemies
 }
 func (s *Board) GetRookAttacks(square Square, color bool) uint64 {
 	var attacks uint64 = Rays["north"][square]
@@ -40,11 +42,17 @@ func (s *Board) GetRookAttacks(square Square, color bool) uint64 {
 	blocker = 63 - bits.LeadingZeros64((Rays["west"][square]&s.occupied)|1)
 	attacks &= ^Rays["west"][blocker]
 
-	return s.filterAttacks(attacks, color)
+	if color == s.WhiteToMove {
+		return attacks & ^s.friends
+	}
+	return attacks & ^s.enemies
 }
 
 func (s *Board) GetKnightAttacks(square Square, color bool) uint64 {
-	return s.filterAttacks(KnightMasks[square], color)
+	if color == s.WhiteToMove {
+		return KnightMasks[square] & ^s.friends
+	}
+	return KnightMasks[square] & ^s.enemies
 }
 
 func (s *Board) GetKingAttacks(square Square, color bool) uint64 {
@@ -61,7 +69,10 @@ func (s *Board) GetKingAttacks(square Square, color bool) uint64 {
 	if queensideOK {
 		attacks |= (1 << castlingSquares[color][CastleLong][0]) //= SetBit(attacks, castlingSquares[color][CastleLong][0])
 	}
-	return s.filterAttacks(attacks, color)
+	if color == s.WhiteToMove {
+		return attacks & ^s.friends
+	}
+	return attacks & ^s.enemies
 }
 
 func (s *Board) GetPawnPushes(square Square, color bool) uint64 {
@@ -88,7 +99,7 @@ func (s *Board) GetPawnAttacks(square Square, color bool) uint64 {
 	return PawnAttacksMasks[color][square] & (s.friends | enPassantMask)
 }
 
-func (s *Board) GenerateAttacksForPiece(piece Piece, from Square, color bool) uint64 {
+/*func (s *Board) GenerateAttacksForPiece(piece Piece, from Square, color bool) uint64 {
 
 	switch piece {
 	case Pawn:
@@ -105,7 +116,7 @@ func (s *Board) GenerateAttacksForPiece(piece Piece, from Square, color bool) ui
 		return s.GetKingAttacks(from, color)
 	}
 	return 0
-}
+}*/
 
 func (s *Board) IsUnderAttack(square Square, color bool) bool {
 	if s.GetBishopAttacks(square, color)&(s.Bitboards[!color][Bishop]|s.Bitboards[!color][Queen]) != 0 {
@@ -129,10 +140,4 @@ func (s *Board) AnyUnderAttack(color bool, squares ...Square) bool {
 		}
 	}
 	return false
-}
-func (s *Board) filterAttacks(attacks uint64, color bool) uint64 {
-	if color == s.WhiteToMove {
-		return attacks & ^s.friends
-	}
-	return attacks & ^s.enemies
 }
