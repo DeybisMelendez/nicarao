@@ -2,7 +2,8 @@ package board
 
 func (s *Board) MakeMove(move Move) {
 	s.pushUnMakeInfo()
-	var color bool = s.WhiteToMove
+	var color uint8 = s.WhiteToMove
+	var enemy uint8 = s.GetEnemyColor()
 	var piece Piece = move.Piece()
 	var capture Piece = move.Capture()
 	var promo = move.Promotion()
@@ -19,14 +20,14 @@ func (s *Board) MakeMove(move Move) {
 	case DoublePawnPush:
 		s.Bitboards[color][piece] ^= fromToBB
 		s.friends ^= fromToBB
-		if color {
+		if color == White {
 			s.Enpassant = to - 8
 		} else {
 			s.Enpassant = to + 8
 		}
 	case Capture:
 		s.Bitboards[color][piece] ^= fromToBB
-		s.Bitboards[!color][capture] ^= toBB
+		s.Bitboards[enemy][capture] ^= toBB
 		s.friends ^= fromToBB
 		s.enemies ^= toBB
 	case Promotion:
@@ -37,13 +38,13 @@ func (s *Board) MakeMove(move Move) {
 	case CapturePromotion:
 		s.Bitboards[color][piece] &= ^fromBB
 		s.Bitboards[color][promo] |= toBB
-		s.Bitboards[!color][capture] ^= toBB
+		s.Bitboards[enemy][capture] ^= toBB
 		s.friends ^= fromToBB
 		s.enemies ^= toBB
 	case KingCastle:
 		s.Bitboards[color][piece] ^= fromToBB
 		s.friends ^= fromToBB
-		if color {
+		if color == White {
 			s.Bitboards[color][Rook] ^= (1 << F1) ^ (1 << H1)
 			s.friends ^= (1 << F1) ^ (1 << H1)
 		} else {
@@ -53,7 +54,7 @@ func (s *Board) MakeMove(move Move) {
 	case QueenCastle:
 		s.Bitboards[color][piece] ^= fromToBB
 		s.friends ^= fromToBB
-		if color {
+		if color == White {
 			s.Bitboards[color][Rook] ^= (1 << D1) ^ (1 << A1)
 			s.friends ^= (1 << D1) ^ (1 << A1)
 		} else {
@@ -63,34 +64,34 @@ func (s *Board) MakeMove(move Move) {
 	case EnpassantCapture:
 		s.Bitboards[color][piece] ^= fromToBB
 		s.friends ^= fromToBB
-		if color {
-			s.Bitboards[!color][Pawn] &= ^(1 << (to - 8))
+		if color == White {
+			s.Bitboards[enemy][Pawn] &= ^(1 << (to - 8))
 			s.enemies &= ^(1 << (to - 8))
 		} else {
-			s.Bitboards[!color][Pawn] &= ^(1 << (to + 8))
+			s.Bitboards[enemy][Pawn] &= ^(1 << (to + 8))
 			s.enemies &= ^(1 << (to + 8))
 		}
 	}
 	// Casos muy especiales sobre derechos de enroque
 	if capture == Rook { // En caso de que una torre sea capturada en su casilla inicial
-		if (to == A1 && !s.WhiteToMove) || (to == A8 && s.WhiteToMove) {
-			s.HandleCastle(!color, CastleLong, true)
-		} else if (to == H1 && !s.WhiteToMove) || (to == H8 && s.WhiteToMove) {
-			s.HandleCastle(!color, CastleShort, true)
+		if (to == A1 && s.WhiteToMove == Black) || (to == A8 && s.WhiteToMove == White) {
+			s.HandleCastle(enemy, CastleLong, true)
+		} else if (to == H1 && s.WhiteToMove == Black) || (to == H8 && s.WhiteToMove == White) {
+			s.HandleCastle(enemy, CastleShort, true)
 		}
 	}
 	if piece == Rook { // En caso de que tenga derecho a enrocar y este en su casilla inicial
-		if (from == A1 && s.WhiteToMove) || (from == A8 && !s.WhiteToMove) {
+		if (from == A1 && s.WhiteToMove == White) || (from == A8 && s.WhiteToMove == Black) {
 			s.HandleCastle(color, CastleLong, true)
 		}
-		if (from == H1 && s.WhiteToMove) || (from == H8 && !s.WhiteToMove) {
+		if (from == H1 && s.WhiteToMove == White) || (from == H8 && s.WhiteToMove == Black) {
 			s.HandleCastle(color, CastleShort, true)
 		}
 	} else if piece == King {
 		s.HandleCastle(color, CastleShort, true)
 		s.HandleCastle(color, CastleLong, true)
 	}
-	s.WhiteToMove = !color
+	s.FlipTurn()
 	var copyFriends uint64 = s.friends
 	s.friends = s.enemies
 	s.enemies = copyFriends
@@ -99,7 +100,8 @@ func (s *Board) MakeMove(move Move) {
 
 func (s *Board) UnMakeMove(move Move) {
 	s.popUnMakeInfo()
-	var color bool = !s.WhiteToMove
+	var color uint8 = s.GetEnemyColor()
+	var enemy uint8 = s.WhiteToMove
 	var copyFriends uint64 = s.friends
 	var piece = move.Piece()
 	var capture = move.Capture()
@@ -118,7 +120,7 @@ func (s *Board) UnMakeMove(move Move) {
 		s.friends ^= fromToBB
 	case Capture:
 		s.Bitboards[color][piece] ^= fromToBB
-		s.Bitboards[!color][capture] |= toBB
+		s.Bitboards[enemy][capture] |= toBB
 		s.friends ^= fromToBB
 		s.enemies |= toBB
 	case Promotion:
@@ -129,13 +131,13 @@ func (s *Board) UnMakeMove(move Move) {
 	case CapturePromotion:
 		s.Bitboards[color][piece] |= fromBB
 		s.Bitboards[color][promo] &= ^toBB
-		s.Bitboards[!color][capture] |= toBB
+		s.Bitboards[enemy][capture] |= toBB
 		s.friends ^= fromToBB
 		s.enemies |= toBB
 	case KingCastle:
 		s.Bitboards[color][piece] ^= fromToBB
 		s.friends ^= fromToBB
-		if color {
+		if color == White {
 			s.Bitboards[color][Rook] ^= (1 << H1) ^ (1 << F1)
 			s.friends ^= (1 << H1) ^ (1 << F1)
 		} else {
@@ -145,7 +147,7 @@ func (s *Board) UnMakeMove(move Move) {
 	case QueenCastle:
 		s.Bitboards[color][piece] ^= fromToBB
 		s.friends ^= fromToBB
-		if color {
+		if color == White {
 			s.Bitboards[color][Rook] ^= (1 << A1) ^ (1 << D1)
 			s.friends ^= (1 << A1) ^ (1 << D1)
 		} else {
@@ -155,14 +157,14 @@ func (s *Board) UnMakeMove(move Move) {
 	case EnpassantCapture:
 		s.Bitboards[color][piece] ^= fromToBB
 		s.friends ^= fromToBB
-		if color {
-			s.Bitboards[!color][Pawn] |= (1 << (to - 8))
+		if color == White {
+			s.Bitboards[enemy][Pawn] |= (1 << (to - 8))
 			s.enemies |= (1 << (to - 8))
 		} else {
-			s.Bitboards[!color][Pawn] |= (1 << (to + 8))
+			s.Bitboards[enemy][Pawn] |= (1 << (to + 8))
 			s.enemies |= (1 << (to + 8))
 		}
 	}
-	s.WhiteToMove = color
+	s.FlipTurn()
 	s.occupied = s.friends | s.enemies
 }

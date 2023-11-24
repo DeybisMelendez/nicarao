@@ -8,9 +8,9 @@ import "fmt"
 //Board contiene todos los elementos necesarios para representar un tablero de ajedrez
 type Board struct {
 	//WhiteToMove indica el turno del jugador, true para blancas y false para negras
-	WhiteToMove bool
-	//Bitboards es un mapa que contiene un bitboard por cada pieza de ajedrez en el tablero
-	Bitboards map[bool]map[Piece]uint64
+	WhiteToMove uint8
+	//Bitboards es un Array que contiene un bitboard por cada pieza de ajedrez en el tablero
+	Bitboards [2][7]uint64
 	//Enpassant indica la casilla donde la captura al paso puede suceder,
 	//su estado es 0 cuando no existe captura al paso
 	Enpassant Square
@@ -39,7 +39,7 @@ type Board struct {
 
 func NewBoard() *Board {
 	return &Board{
-		Bitboards: map[bool]map[Piece]uint64{
+		/*Bitboards: map[bool]map[Piece]uint64{
 			White: {
 				Pawn:   0,
 				Knight: 0,
@@ -56,7 +56,7 @@ func NewBoard() *Board {
 				Queen:  0,
 				King:   0,
 			},
-		},
+		},*/
 	}
 }
 

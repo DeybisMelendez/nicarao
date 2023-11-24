@@ -5,13 +5,13 @@ type Piece uint8
 
 var pieceTypes = []Piece{Pawn, Knight, Bishop, Rook, Queen, King}
 var piecePromotions = []Piece{Queen, Rook, Bishop, Knight}
-var castling map[bool]map[bool]uint8
-var castlingSquares map[bool]map[bool][]Square
+var castling [2][2]uint8
+var castlingSquares [2][2][]Square
 
-const White bool = true
-const Black bool = false
-const CastleShort bool = true
-const CastleLong bool = false
+const White uint8 = 0
+const Black uint8 = 1
+const CastleShort uint8 = 0
+const CastleLong uint8 = 1
 const StartingPos string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 const (
 	None Piece = iota

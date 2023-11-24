@@ -12,9 +12,9 @@ var onlyRank = [8]uint64{
 	0xFF, 0xFF00, 0xFF0000, 0xFF000000,
 	0xFF00000000, 0xFF0000000000, 0xFF000000000000, 0xFF00000000000000}*/
 
-var castlingMask map[bool]map[bool]uint64
-var PawnPushesMasks map[bool][]uint64
-var PawnAttacksMasks map[bool][]uint64
+var castlingMask [2][2]uint64
+var PawnPushesMasks [2][64]uint64
+var PawnAttacksMasks [2][64]uint64
 var KnightMasks = [64]uint64{
 	0x0000000000020400, 0x0000000000050800, 0x00000000000a1100, 0x0000000000142200,
 	0x0000000000284400, 0x0000000000508800, 0x0000000000a01000, 0x0000000000402000,

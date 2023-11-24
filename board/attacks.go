@@ -4,7 +4,7 @@ import (
 	"math/bits"
 )
 
-func (s *Board) GetBishopAttacks(square Square, color bool) uint64 {
+func (s *Board) GetBishopAttacks(square Square, color uint8) uint64 {
 	var attacks uint64 = Rays[northWest][square]
 	var blocker int = bits.TrailingZeros64((Rays[northWest][square] & s.occupied) | 0x8000000000000000)
 	attacks &= ^Rays[northWest][blocker]
@@ -25,7 +25,7 @@ func (s *Board) GetBishopAttacks(square Square, color bool) uint64 {
 	}
 	return attacks & ^s.enemies
 }
-func (s *Board) GetRookAttacks(square Square, color bool) uint64 {
+func (s *Board) GetRookAttacks(square Square, color uint8) uint64 {
 	var attacks uint64 = Rays[north][square]
 	var blocker int = bits.TrailingZeros64((Rays[north][square] & s.occupied) | 0x8000000000000000)
 	attacks &= ^Rays[north][blocker]
@@ -48,14 +48,14 @@ func (s *Board) GetRookAttacks(square Square, color bool) uint64 {
 	return attacks & ^s.enemies
 }
 
-func (s *Board) GetKnightAttacks(square Square, color bool) uint64 {
+func (s *Board) GetKnightAttacks(square Square, color uint8) uint64 {
 	if color == s.WhiteToMove {
 		return KnightMasks[square] & ^s.friends
 	}
 	return KnightMasks[square] & ^s.enemies
 }
 
-func (s *Board) GetKingAttacks(square Square, color bool) uint64 {
+func (s *Board) GetKingAttacks(square Square, color uint8) uint64 {
 	var attacks uint64 = KingMasks[square]
 	var kingsideOK bool = s.CanCastle(color, CastleShort) &&
 		s.occupied&castlingMask[color][CastleShort] == 0 &&
@@ -75,9 +75,9 @@ func (s *Board) GetKingAttacks(square Square, color bool) uint64 {
 	return attacks & ^s.enemies
 }
 
-func (s *Board) GetPawnPushes(square Square, color bool) uint64 {
+func (s *Board) GetPawnPushes(square Square, color uint8) uint64 {
 	var mask uint64 = PawnPushesMasks[color][square]
-	if color {
+	if color == White {
 		square += 8
 	} else {
 		square -= 8
@@ -88,7 +88,7 @@ func (s *Board) GetPawnPushes(square Square, color bool) uint64 {
 	return mask & ^s.occupied
 }
 
-func (s *Board) GetPawnAttacks(square Square, color bool) uint64 {
+func (s *Board) GetPawnAttacks(square Square, color uint8) uint64 {
 	var enPassantMask uint64
 	if s.Enpassant != 0 && color == s.WhiteToMove {
 		enPassantMask = 1 << s.Enpassant
@@ -118,22 +118,26 @@ func (s *Board) GetPawnAttacks(square Square, color bool) uint64 {
 	return 0
 }*/
 
-func (s *Board) IsUnderAttack(square Square, color bool) bool {
-	if s.GetBishopAttacks(square, color)&(s.Bitboards[!color][Bishop]|s.Bitboards[!color][Queen]) != 0 {
+func (s *Board) IsUnderAttack(square Square, color uint8) bool {
+	var enemy uint8 = White
+	if color == White {
+		enemy = Black
+	}
+	if s.GetBishopAttacks(square, color)&(s.Bitboards[enemy][Bishop]|s.Bitboards[enemy][Queen]) != 0 {
 		return true
 	}
-	if s.GetRookAttacks(square, color)&(s.Bitboards[!color][Rook]|s.Bitboards[!color][Queen]) != 0 {
+	if s.GetRookAttacks(square, color)&(s.Bitboards[enemy][Rook]|s.Bitboards[enemy][Queen]) != 0 {
 		return true
 	}
-	if s.GetKnightAttacks(square, color)&s.Bitboards[!color][Knight] != 0 {
+	if s.GetKnightAttacks(square, color)&s.Bitboards[enemy][Knight] != 0 {
 		return true
 	}
-	if s.GetPawnAttacks(square, color)&s.Bitboards[!color][Pawn] != 0 {
+	if s.GetPawnAttacks(square, color)&s.Bitboards[enemy][Pawn] != 0 {
 		return true
 	}
-	return KingMasks[square]&s.Bitboards[!color][King] != 0
+	return KingMasks[square]&s.Bitboards[enemy][King] != 0
 }
-func (s *Board) AnyUnderAttack(color bool, squares ...Square) bool {
+func (s *Board) AnyUnderAttack(color uint8, squares ...Square) bool {
 	for _, square := range squares {
 		if s.IsUnderAttack(square, color) {
 			return true

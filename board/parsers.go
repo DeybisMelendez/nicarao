@@ -13,9 +13,11 @@ func (s *Board) ParseFEN(fen string) error {
 	var rank Square = 7
 	var file Square = 0
 	if parts[1] == "w" {
-		s.WhiteToMove = true
+		s.WhiteToMove = White
 	} else if parts[1] == "b" {
-		s.WhiteToMove = false
+		s.WhiteToMove = Black
+	} else {
+		return fmt.Errorf("error: FEN string is invalid, %s", fen)
 	}
 
 	for _, char := range parts[0] {
@@ -27,7 +29,11 @@ func (s *Board) ParseFEN(fen string) error {
 			file += Square(char - '0')
 		default:
 			piece := charToPiece(char)
-			s.Bitboards[piece <= 7][piece%7] |= SetBit(0, rank*8+file)
+			if piece <= 7 {
+				s.Bitboards[White][piece%7] |= SetBit(0, rank*8+file)
+			} else {
+				s.Bitboards[Black][piece%7] |= SetBit(0, rank*8+file)
+			}
 			file++
 		}
 	}
@@ -42,7 +48,7 @@ func (s *Board) ParseFEN(fen string) error {
 		}
 	}
 	s.friends = s.GetAll(s.WhiteToMove)
-	s.enemies = s.GetAll(!s.WhiteToMove)
+	s.enemies = s.GetAll(s.GetEnemyColor())
 	s.occupied = s.friends | s.enemies
 	//clearUnMakeInfo()
 	return nil

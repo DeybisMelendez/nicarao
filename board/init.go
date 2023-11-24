@@ -1,19 +1,19 @@
 package board
 
 func init() {
-	castling = map[bool]map[bool]uint8{
+	castling = [2][2]uint8{
 		White: {CastleShort: 2, CastleLong: 8},
 		Black: {CastleShort: 1, CastleLong: 4},
 	}
-	castlingMask = map[bool]map[bool]uint64{
+	castlingMask = [2][2]uint64{
 		White: {CastleShort: 0x60, CastleLong: 0xe},
 		Black: {CastleShort: 0x6000000000000000, CastleLong: 0xe00000000000000},
 	}
-	castlingSquares = map[bool]map[bool][]Square{
+	castlingSquares = [2][2][]Square{
 		White: {CastleShort: {F1, G1, E1}, CastleLong: {C1, D1, E1}},
 		Black: {CastleShort: {F8, G8, E8}, CastleLong: {C8, D8, E8}},
 	}
-	PawnPushesMasks = map[bool][]uint64{
+	PawnPushesMasks = [2][64]uint64{
 		White: {0, 0, 0, 0, 0, 0, 0, 0,
 			0x1010000, 0x2020000, 0x4040000, 0x8080000,
 			0x10100000, 0x20200000, 0x40400000, 0x80800000,
@@ -37,7 +37,7 @@ func init() {
 			0x10100000000, 0x20200000000, 0x40400000000, 0x80800000000, 0x101000000000,
 			0x202000000000, 0x404000000000, 0x808000000000, 0, 0, 0, 0, 0, 0, 0, 0},
 	}
-	PawnAttacksMasks = map[bool][]uint64{
+	PawnAttacksMasks = [2][64]uint64{
 		White: {0x200, 0x500, 0xa00, 0x1400, 0x2800, 0x5000,
 			0xa000, 0x4000, 0x20000, 0x50000, 0xa0000, 0x140000, 0x280000, 0x500000, 0xa00000,
 			0x400000, 0x2000000, 0x5000000, 0xa000000, 0x14000000, 0x28000000, 0x50000000,
