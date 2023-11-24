@@ -5,42 +5,42 @@ import (
 )
 
 func (s *Board) GetBishopAttacks(square Square, color bool) uint64 {
-	var attacks uint64 = Rays["northWest"][square]
-	var blocker int = bits.TrailingZeros64((Rays["northWest"][square] & s.occupied) | 0x8000000000000000)
-	attacks &= ^Rays["northWest"][blocker]
+	var attacks uint64 = Rays[northWest][square]
+	var blocker int = bits.TrailingZeros64((Rays[northWest][square] & s.occupied) | 0x8000000000000000)
+	attacks &= ^Rays[northWest][blocker]
 
-	attacks |= Rays["northEast"][square]
-	blocker = bits.TrailingZeros64((Rays["northEast"][square] & s.occupied) | 0x8000000000000000)
-	attacks &= ^Rays["northEast"][blocker]
+	attacks |= Rays[northEast][square]
+	blocker = bits.TrailingZeros64((Rays[northEast][square] & s.occupied) | 0x8000000000000000)
+	attacks &= ^Rays[northEast][blocker]
 
-	attacks |= Rays["southWest"][square]
-	blocker = 63 - bits.LeadingZeros64((Rays["southWest"][square]&s.occupied)|1)
-	attacks &= ^Rays["southWest"][blocker]
+	attacks |= Rays[southWest][square]
+	blocker = 63 - bits.LeadingZeros64((Rays[southWest][square]&s.occupied)|1)
+	attacks &= ^Rays[southWest][blocker]
 
-	attacks |= Rays["southEast"][square]
-	blocker = 63 - bits.LeadingZeros64((Rays["southEast"][square]&s.occupied)|1)
-	attacks &= ^Rays["southEast"][blocker]
+	attacks |= Rays[southEast][square]
+	blocker = 63 - bits.LeadingZeros64((Rays[southEast][square]&s.occupied)|1)
+	attacks &= ^Rays[southEast][blocker]
 	if color == s.WhiteToMove {
 		return attacks & ^s.friends
 	}
 	return attacks & ^s.enemies
 }
 func (s *Board) GetRookAttacks(square Square, color bool) uint64 {
-	var attacks uint64 = Rays["north"][square]
-	var blocker int = bits.TrailingZeros64((Rays["north"][square] & s.occupied) | 0x8000000000000000)
-	attacks &= ^Rays["north"][blocker]
+	var attacks uint64 = Rays[north][square]
+	var blocker int = bits.TrailingZeros64((Rays[north][square] & s.occupied) | 0x8000000000000000)
+	attacks &= ^Rays[north][blocker]
 
-	attacks |= Rays["east"][square]
-	blocker = bits.TrailingZeros64((Rays["east"][square] & s.occupied) | 0x8000000000000000)
-	attacks &= ^Rays["east"][blocker]
+	attacks |= Rays[east][square]
+	blocker = bits.TrailingZeros64((Rays[east][square] & s.occupied) | 0x8000000000000000)
+	attacks &= ^Rays[east][blocker]
 
-	attacks |= Rays["south"][square]
-	blocker = 63 - bits.LeadingZeros64((Rays["south"][square]&s.occupied)|1)
-	attacks &= ^Rays["south"][blocker]
+	attacks |= Rays[south][square]
+	blocker = 63 - bits.LeadingZeros64((Rays[south][square]&s.occupied)|1)
+	attacks &= ^Rays[south][blocker]
 
-	attacks |= Rays["west"][square]
-	blocker = 63 - bits.LeadingZeros64((Rays["west"][square]&s.occupied)|1)
-	attacks &= ^Rays["west"][blocker]
+	attacks |= Rays[west][square]
+	blocker = 63 - bits.LeadingZeros64((Rays[west][square]&s.occupied)|1)
+	attacks &= ^Rays[west][blocker]
 
 	if color == s.WhiteToMove {
 		return attacks & ^s.friends

@@ -99,6 +99,17 @@ const (
 	H8
 )
 
+const (
+	north uint8 = iota
+	south
+	west
+	east
+	southWest
+	southEast
+	northWest
+	northEast
+)
+
 const FileA uint64 = 0x0101010101010101
 const FileH uint64 = 0x8080808080808080
 const Rank4 uint64 = 0x00000000FF000000
