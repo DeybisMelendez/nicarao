@@ -80,7 +80,7 @@ func (s *Board) GetAll(color bool) uint64 {
 
 //GetPiece devuelve la pieza que está controlando la casilla indicada
 func (s *Board) GetPiece(square Square, color bool) Piece {
-	var mask uint64 = 0 << square //= SetBit(0, square)
+	var mask uint64 = 1 << square
 	//var mask uint64 = SquareToBB[square]
 	for _, piece := range pieceTypes {
 		if s.Bitboards[color][piece]&mask != 0 {
