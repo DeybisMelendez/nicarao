@@ -80,7 +80,7 @@ func (s *Board) GetAll(color bool) uint64 {
 
 //GetPiece devuelve la pieza que está controlando la casilla indicada
 func (s *Board) GetPiece(square Square, color bool) Piece {
-	var mask uint64 = SetBit(0, square)
+	var mask uint64 = 0 << square //= SetBit(0, square)
 	//var mask uint64 = SquareToBB[square]
 	for _, piece := range pieceTypes {
 		if s.Bitboards[color][piece]&mask != 0 {
@@ -91,7 +91,7 @@ func (s *Board) GetPiece(square Square, color bool) Piece {
 }
 
 func (s *Board) IsCapture(square Square) bool {
-	return s.occupied&SetBit(0, square) != 0
+	return s.occupied&(1<<square) != 0
 }
 
 //CanCastle devuelve true si el jugador indicado tiene derecho a enrocar corto

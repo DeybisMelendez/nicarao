@@ -56,10 +56,10 @@ func (s *Board) GetKingAttacks(square Square, color bool) uint64 {
 		s.occupied&castlingMask[color][CastleLong] == 0 &&
 		!s.AnyUnderAttack(color, castlingSquares[color][CastleLong]...)
 	if kingsideOK {
-		attacks = SetBit(attacks, castlingSquares[color][CastleShort][1])
+		attacks |= (1 << castlingSquares[color][CastleShort][1]) //= SetBit(attacks, castlingSquares[color][CastleShort][1])
 	}
 	if queensideOK {
-		attacks = SetBit(attacks, castlingSquares[color][CastleLong][0])
+		attacks |= (1 << castlingSquares[color][CastleLong][0]) //= SetBit(attacks, castlingSquares[color][CastleLong][0])
 	}
 	return s.filterAttacks(attacks, color)
 }
@@ -71,7 +71,7 @@ func (s *Board) GetPawnPushes(square Square, color bool) uint64 {
 	} else {
 		square -= 8
 	}
-	if SetBit(0, square)&s.occupied != 0 {
+	if (1<<square)&s.occupied != 0 {
 		return 0
 	}
 	return mask & ^s.occupied
@@ -80,7 +80,7 @@ func (s *Board) GetPawnPushes(square Square, color bool) uint64 {
 func (s *Board) GetPawnAttacks(square Square, color bool) uint64 {
 	var enPassantMask uint64
 	if s.Enpassant != 0 && color == s.WhiteToMove {
-		enPassantMask = SetBit(0, s.Enpassant)
+		enPassantMask = 1 << s.Enpassant
 	}
 	if color == s.WhiteToMove {
 		return PawnAttacksMasks[color][square] & (s.enemies | enPassantMask)

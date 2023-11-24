@@ -29,7 +29,7 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 		for attacks != 0 {
 			to = Square(bits.TrailingZeros64(attacks))
 			capture = s.GetPiece(to, !s.WhiteToMove)
-			if (SetBit(0, to)&Rank1 != 0) || (SetBit(0, to)&Rank8 != 0) { //Coronación de peón
+			if ((1<<to)&Rank1 != 0) || ((1<<to)&Rank8 != 0) { //Coronación de peón
 				for _, promo := range piecePromotions {
 					moves.Push(NewMove(piece, from, to, capture, promo, CapturePromotion))
 				}
@@ -46,7 +46,7 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color bool
 			to = Square(bits.TrailingZeros64(attacks))
 			if (color && to-from == 16) || (!color && from-to == 16) { //Doble peón
 				moves.Push(NewMove(piece, from, to, 0, 0, DoublePawnPush))
-			} else if (SetBit(0, to)&Rank1 != 0) || (SetBit(0, to)&Rank8 != 0) { //Coronación de peón
+			} else if ((1<<to)&Rank1 != 0) || ((1<<to)&Rank8 != 0) { //Coronación de peón
 				for _, promo := range piecePromotions {
 					moves.Push(NewMove(piece, from, to, 0, promo, Promotion))
 				}

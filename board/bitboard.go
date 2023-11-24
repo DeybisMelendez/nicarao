@@ -35,6 +35,9 @@ func PrintBitboard(bitboard uint64) {
 	fmt.Printf("\n")
 }
 
+// Nota: Usar estos métodos en condiciones que no afecten a la búsqueda (Duplicar uint64 puede ser costoso)
+// Preferiblemente usar solo para mantener legibilidad
+
 func GetBit(bitboard uint64, square Square) uint64 {
 	return bitboard & (1 << square)
 }
