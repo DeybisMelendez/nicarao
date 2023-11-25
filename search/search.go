@@ -53,11 +53,12 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 	if depth == 0 {
 		return evaluation.Evaluate(b) //Quiesce
 	}
+	var color uint8 = b.WhiteToMove
+	var bSearchPv bool = true
 	var moves board.MoveList
 	var kingSquare board.Square
-	var color uint8 = b.WhiteToMove
+	var hasLegalMove bool
 	var score int16
-	var bSearchPv bool = true
 	b.GeneratePseudoMoves(&moves)
 	//Aplicar ordenamiento de movimientos aqui
 
@@ -65,6 +66,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 		b.MakeMove(moves.List[i])
 		kingSquare = board.Square(bits.TrailingZeros64(b.Bitboards[color][board.King]))
 		if !b.IsUnderAttack(kingSquare, color) { //Si el movimiento es legal!
+			hasLegalMove = true
 			if bSearchPv {
 				score = -PVSearch(b, -beta, -alpha, depth-1)
 			} else {
@@ -83,6 +85,14 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 			}
 		} else {
 			b.UnMakeMove(moves.List[i])
+		}
+	}
+	if !hasLegalMove {
+		kingSquare = board.Square(bits.TrailingZeros64(b.Bitboards[color][board.King]))
+		if b.IsUnderAttack(kingSquare, color) {
+			return -MateValue + b.Ply //Jaque mate
+		} else {
+			return 0 //Tablas por ahogado
 		}
 	}
 

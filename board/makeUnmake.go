@@ -1,6 +1,7 @@
 package board
 
 func (s *Board) MakeMove(move Move) {
+	s.Ply++
 	s.pushUnMakeInfo()
 	var color uint8 = s.WhiteToMove
 	var enemy uint8 = s.GetEnemyColor()
@@ -99,6 +100,7 @@ func (s *Board) MakeMove(move Move) {
 }
 
 func (s *Board) UnMakeMove(move Move) {
+	s.Ply--
 	s.popUnMakeInfo()
 	var color uint8 = s.GetEnemyColor()
 	var enemy uint8 = s.WhiteToMove

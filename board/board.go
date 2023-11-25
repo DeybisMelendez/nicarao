@@ -35,6 +35,9 @@ type Board struct {
 	unMakeInfoList [MaxPly]UnMakeInfo
 	//Index del último cambio realizado en el historial UnMakeInfoList
 	unMakeInfoIndex int
+
+	//Indica la profundidad alcanzada por el tablero
+	Ply int16
 }
 
 func NewBoard() *Board {
