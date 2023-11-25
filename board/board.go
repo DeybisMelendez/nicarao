@@ -7,6 +7,7 @@ import "fmt"
 
 //Board contiene todos los elementos necesarios para representar un tablero de ajedrez
 type Board struct {
+	Hash uint64
 	//WhiteToMove indica el turno del jugador, true para blancas y false para negras
 	WhiteToMove uint8
 	//Bitboards es un Array que contiene un bitboard por cada pieza de ajedrez en el tablero

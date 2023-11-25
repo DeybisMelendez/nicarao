@@ -8,6 +8,10 @@ var piecePromotions = []Piece{Queen, Rook, Bishop, Knight}
 var castling [2][2]uint8
 var castlingSquares [2][2][]Square
 
+var pieceSquareZobrist [2][7][64]uint64
+var castleRightsZobrist [2][2]uint64
+var whiteToMoveZobrist uint64
+
 const White uint8 = 0
 const Black uint8 = 1
 const CastleShort uint8 = 0

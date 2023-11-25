@@ -1,18 +1,25 @@
 package board
 
 func (s *Board) MakeMove(move Move) {
-	s.Ply++
-	s.pushUnMakeInfo()
 	var color uint8 = s.WhiteToMove
 	var enemy uint8 = s.GetEnemyColor()
 	var piece Piece = move.Piece()
 	var capture Piece = move.Capture()
-	var promo = move.Promotion()
-	var to = move.To()
-	var from = move.From()
+	var promo Piece = move.Promotion()
+	var to Square = move.To()
+	var from Square = move.From()
 	var toBB uint64 = 1 << to
 	var fromBB uint64 = 1 << from
 	var fromToBB uint64 = fromBB ^ toBB
+
+	s.Ply++
+	s.pushUnMakeInfo()
+
+	s.Hash ^= whiteToMoveZobrist //Cambiamos el turno de la posición
+	s.Hash ^= pieceSquareZobrist[color][piece][from]
+	s.Hash ^= pieceSquareZobrist[color][piece][to]
+	s.Hash ^= uint64(s.Enpassant) // Eliminamos el enpassant actual
+
 	s.Enpassant = 0
 	switch move.Flag() {
 	case QuietMoves:
@@ -31,18 +38,22 @@ func (s *Board) MakeMove(move Move) {
 		s.Bitboards[enemy][capture] ^= toBB
 		s.friends ^= fromToBB
 		s.enemies ^= toBB
+		s.Hash ^= pieceSquareZobrist[color][capture][to]
 	case Promotion:
 		s.Bitboards[color][piece] &= ^fromBB
 		s.Bitboards[color][promo] |= toBB
 		s.friends &= ^fromBB
 		s.friends |= toBB
+		s.Hash ^= pieceSquareZobrist[color][promo][to]
 	case CapturePromotion:
 		s.Bitboards[color][piece] &= ^fromBB
 		s.Bitboards[color][promo] |= toBB
 		s.Bitboards[enemy][capture] ^= toBB
 		s.friends ^= fromToBB
 		s.enemies ^= toBB
-	case KingCastle:
+		s.Hash ^= pieceSquareZobrist[color][piece][to] // Eliminamos el peón en octava
+		s.Hash ^= pieceSquareZobrist[color][promo][to]
+	case KingCastle: // El derecho al enroque se maneja mas adelante
 		s.Bitboards[color][piece] ^= fromToBB
 		s.friends ^= fromToBB
 		if color == White {
@@ -52,7 +63,7 @@ func (s *Board) MakeMove(move Move) {
 			s.Bitboards[color][Rook] ^= (1 << F8) ^ (1 << H8)
 			s.friends ^= (1 << F8) ^ (1 << H8)
 		}
-	case QueenCastle:
+	case QueenCastle: // El derecho al enroque se maneja mas adelante
 		s.Bitboards[color][piece] ^= fromToBB
 		s.friends ^= fromToBB
 		if color == White {
@@ -73,30 +84,53 @@ func (s *Board) MakeMove(move Move) {
 			s.enemies &= ^(1 << (to + 8))
 		}
 	}
-	// Casos muy especiales sobre derechos de enroque
-	if capture == Rook { // En caso de que una torre sea capturada en su casilla inicial
-		if (to == A1 && s.WhiteToMove == Black) || (to == A8 && s.WhiteToMove == White) {
-			s.HandleCastle(enemy, CastleLong, true)
-		} else if (to == H1 && s.WhiteToMove == Black) || (to == H8 && s.WhiteToMove == White) {
-			s.HandleCastle(enemy, CastleShort, true)
+	// En caso de que aún existan derechos a enrocar
+	if s.Castling != 0 {
+		// Casos muy especiales sobre derechos de enroque
+		if capture == Rook { // En caso de que una torre sea capturada en su casilla inicial
+			if (to == A1 && color == Black) || (to == A8 && color == White) {
+				if s.CanCastle(enemy, CastleLong) {
+					s.HandleCastle(enemy, CastleLong, true)
+					s.Hash ^= castleRightsZobrist[enemy][CastleLong]
+				}
+			} else if (to == H1 && color == Black) || (to == H8 && color == White) {
+				if s.CanCastle(enemy, CastleShort) {
+					s.HandleCastle(enemy, CastleShort, true)
+					s.Hash ^= castleRightsZobrist[enemy][CastleShort]
+				}
+			}
+		}
+		if piece == Rook { // En caso de que tenga derecho a enrocar y se mueva de su casilla inicial
+			if (from == A1 && color == White) || (from == A8 && color == Black) {
+				if s.CanCastle(color, CastleLong) {
+					s.HandleCastle(color, CastleLong, true)
+					s.Hash ^= castleRightsZobrist[color][CastleLong]
+				}
+			}
+			if (from == H1 && color == White) || (from == H8 && color == Black) {
+				if s.CanCastle(color, CastleShort) {
+					s.HandleCastle(color, CastleShort, true)
+					s.Hash ^= castleRightsZobrist[color][CastleLong]
+				}
+			}
+		} else if piece == King { //Si el rey se mueve pierde el enroque, incluso al enrocar
+			if s.CanCastle(color, CastleShort) {
+				s.HandleCastle(color, CastleShort, true)
+				s.Hash ^= castleRightsZobrist[color][CastleShort]
+			}
+			if s.CanCastle(color, CastleLong) {
+				s.HandleCastle(color, CastleLong, true)
+				s.Hash ^= castleRightsZobrist[color][CastleLong]
+			}
 		}
 	}
-	if piece == Rook { // En caso de que tenga derecho a enrocar y este en su casilla inicial
-		if (from == A1 && s.WhiteToMove == White) || (from == A8 && s.WhiteToMove == Black) {
-			s.HandleCastle(color, CastleLong, true)
-		}
-		if (from == H1 && s.WhiteToMove == White) || (from == H8 && s.WhiteToMove == Black) {
-			s.HandleCastle(color, CastleShort, true)
-		}
-	} else if piece == King {
-		s.HandleCastle(color, CastleShort, true)
-		s.HandleCastle(color, CastleLong, true)
-	}
+	s.Hash ^= uint64(s.Enpassant) //Colocamos el nuevo enpassant
 	s.FlipTurn()
 	var copyFriends uint64 = s.friends
 	s.friends = s.enemies
 	s.enemies = copyFriends
 	s.occupied = s.friends | s.enemies
+
 }
 
 func (s *Board) UnMakeMove(move Move) {
