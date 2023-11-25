@@ -64,3 +64,30 @@ func (m *Move) SetPromotion(piece Piece) {
 func (m *Move) SetFlag(flag MoveFlag) {
 	*m = Move((uint32(flag) & 0x7 << 21) | (uint32(*m) &^ (0x7 << 21)))
 }
+func (m Move) MoveToString() string {
+	from := int(m.From())
+	to := int(m.To())
+	fromFile := string('a' + byte(from%8))
+	fromRank := string('1' + byte(from/8))
+	toFile := string('a' + byte(to%8))
+	toRank := string('1' + byte(to/8))
+
+	moveStr := fromFile + fromRank + toFile + toRank
+
+	if m.Promotion() != None {
+		promo := ""
+		switch m.Promotion() {
+		case Queen:
+			promo = "q"
+		case Rook:
+			promo = "r"
+		case Bishop:
+			promo = "b"
+		case Knight:
+			promo = "n"
+		}
+		moveStr += promo
+	}
+
+	return moveStr
+}
