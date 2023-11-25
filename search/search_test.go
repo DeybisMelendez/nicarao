@@ -33,12 +33,17 @@ func TestMatedIn(t *testing.T) {
 	for _, tc := range testCases {
 		var b board.Board
 		var score int16
+		var mate int16
 		b.ParseFEN(tc.fen)
 		for i := uint8(1); i < 12; i++ {
 			score = PVSearch(&b, -Inf, Inf, i)
 			if 1+(MateValue-score)/2 == tc.mateIn {
+				mate = tc.mateIn
 				break
 			}
+		}
+		if mate != tc.mateIn {
+			t.Errorf("%s, Solución: Mate en %d, Resultado: Mate en %d", tc.id, tc.mateIn, score)
 		}
 	}
 }
