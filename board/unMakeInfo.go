@@ -1,9 +1,10 @@
 package board
 
 type UnMakeInfo struct {
-	Enpassant Square
-	Castling  uint8
-	Hash      uint64
+	Hash          uint64
+	Castling      uint8
+	Enpassant     Square
+	HalfmoveClock uint8
 }
 
 func (s *Board) pushUnMakeInfo() {
@@ -14,6 +15,7 @@ func (s *Board) saveUnMakeInfo() {
 	s.unMakeInfoList[s.unMakeInfoIndex].Enpassant = s.Enpassant
 	s.unMakeInfoList[s.unMakeInfoIndex].Castling = s.Castling
 	s.unMakeInfoList[s.unMakeInfoIndex].Hash = s.Hash
+	s.unMakeInfoList[s.unMakeInfoIndex].HalfmoveClock = s.HalfmoveClock
 }
 
 func (s *Board) popUnMakeInfo() {
@@ -21,6 +23,7 @@ func (s *Board) popUnMakeInfo() {
 	s.Enpassant = s.unMakeInfoList[s.unMakeInfoIndex].Enpassant
 	s.Castling = s.unMakeInfoList[s.unMakeInfoIndex].Castling
 	s.Hash = s.unMakeInfoList[s.unMakeInfoIndex].Hash
+	s.HalfmoveClock = s.unMakeInfoList[s.unMakeInfoIndex].HalfmoveClock
 }
 
 /*func clearUnMakeInfo() {

@@ -13,6 +13,7 @@ func (s *Board) MakeMove(move Move) {
 	var fromToBB uint64 = fromBB ^ toBB
 
 	s.Ply++
+	s.HalfmoveClock++
 	s.pushUnMakeInfo()
 
 	s.Hash ^= whiteToMoveZobrist //Cambiamos el turno de la posición
@@ -21,6 +22,11 @@ func (s *Board) MakeMove(move Move) {
 	s.Hash ^= uint64(s.Enpassant) // Eliminamos el enpassant actual
 
 	s.Enpassant = 0
+
+	if piece == Pawn {
+		s.HalfmoveClock = 0
+	}
+
 	switch move.Flag() {
 	case QuietMoves:
 		s.Bitboards[color][piece] ^= fromToBB
@@ -39,6 +45,7 @@ func (s *Board) MakeMove(move Move) {
 		s.friends ^= fromToBB
 		s.enemies ^= toBB
 		s.Hash ^= pieceSquareZobrist[color][capture][to]
+		s.HalfmoveClock = 0
 	case Promotion:
 		s.Bitboards[color][piece] &= ^fromBB
 		s.Bitboards[color][promo] |= toBB

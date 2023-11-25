@@ -2,6 +2,7 @@ package board
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -18,6 +19,13 @@ func (s *Board) ParseFEN(fen string) error {
 		s.WhiteToMove = Black
 	} else {
 		return fmt.Errorf("error: FEN string is invalid, %s", fen)
+	}
+	if len(parts) >= 5 {
+		halfmoveCount, err := strconv.ParseUint(parts[4], 10, 8)
+		if err != nil {
+			return fmt.Errorf("error parsing HalfmoveClock from FEN: %s", err)
+		}
+		s.HalfmoveClock = uint8(halfmoveCount)
 	}
 
 	for _, char := range parts[0] {
@@ -50,7 +58,6 @@ func (s *Board) ParseFEN(fen string) error {
 	s.friends = s.GetAll(s.WhiteToMove)
 	s.enemies = s.GetAll(s.GetEnemyColor())
 	s.occupied = s.friends | s.enemies
-	//clearUnMakeInfo()
 	s.calcZobristHash()
 	return nil
 }
