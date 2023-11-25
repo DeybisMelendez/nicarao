@@ -55,7 +55,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 	//Transposition Table
 	var bestMove board.Move
 	var hashFlag uint8 = TTUpperBound
-	if ttValue := probeHash(b.Hash, alpha, beta, depth, &bestMove); ttValue != NoHashEntry {
+	if ttValue := probeHash(b.Hash, alpha, beta, depth, &bestMove, b.HalfmoveClock); ttValue != NoHashEntry {
 		return ttValue
 	}
 	// Si nodo es terminal
@@ -90,7 +90,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 			}
 			b.UnMakeMove(move)
 			if score >= beta {
-				recordHash(b.Hash, beta, depth, TTLowerBound, move)
+				recordHash(b.Hash, beta, depth, TTLowerBound, move, b.HalfmoveClock)
 				return beta // fail-hard beta-cutoff
 			}
 			if score > alpha {
@@ -116,7 +116,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 			return 0 //Tablas por ahogado
 		}
 	}
-	recordHash(b.Hash, alpha, depth, hashFlag, bestMove)
+	recordHash(b.Hash, alpha, depth, hashFlag, bestMove, b.HalfmoveClock)
 	return alpha
 }
 

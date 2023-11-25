@@ -19,6 +19,7 @@ const NoHashEntry = math.MinInt16
 
 type TranspositionTable struct {
 	Hash     uint64
+	Age      uint8
 	Depth    uint8
 	Flag     uint8
 	Value    int16

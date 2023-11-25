@@ -3,20 +3,21 @@ package search
 import "nicarao/board"
 
 //http://web.archive.org/web/20070809015843/www.seanet.com/%7Ebrucemo/topics/hashing.htm
-func recordHash(hash uint64, value int16, depth uint8, flag uint8, bestmove board.Move) {
+func recordHash(hash uint64, value int16, depth uint8, flag uint8, bestmove board.Move, age uint8) {
 	ttEntry := &transpositionTable[hash%ttSize]
-	if depth > ttEntry.Depth {
+	if depth > ttEntry.Depth && age >= ttEntry.Age {
 		ttEntry.Depth = depth
 		ttEntry.Flag = flag
 		ttEntry.Value = value
 		ttEntry.BestMove = bestmove
 		ttEntry.Hash = hash
+		ttEntry.Age = age
 	}
 }
 
-func probeHash(hash uint64, alpha int16, beta int16, depth uint8, move *board.Move) int16 {
+func probeHash(hash uint64, alpha int16, beta int16, depth uint8, move *board.Move, age uint8) int16 {
 	var ttEntry TranspositionTable = transpositionTable[hash%ttSize]
-	if ttEntry.Hash == hash {
+	if ttEntry.Hash == hash && ttEntry.Age >= age {
 		if ttEntry.Depth >= depth {
 			if ttEntry.Flag == TTExact {
 				return ttEntry.Value
