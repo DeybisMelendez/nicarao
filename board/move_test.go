@@ -54,7 +54,7 @@ func TestMoveToString(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		m := NewMove(Pawn, A2, A4, None, None, QuietMoves)
+		m := NewMove(None, tc.from, tc.to, None, tc.promo, QuietMoves)
 		result := m.MoveToString()
 		if result != tc.result {
 			t.Errorf("Error: Movimiento esperado: %s, Resultado: %s", tc.result, result)
