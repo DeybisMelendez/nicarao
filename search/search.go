@@ -1,6 +1,7 @@
 package search
 
 import (
+	"math"
 	"math/bits"
 	"nicarao/board"
 	"nicarao/evaluation"
@@ -50,8 +51,18 @@ int zwSearch(int beta, int depth ) {
 */
 //Principal Variation Search with Zero Window Search
 func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
+
+	//Transposition Table
+	var bestMove board.Move
+	var hashFlag uint8 = TTUpperBound
+	if ttValue := probeHash(b.Hash, alpha, beta, depth, &bestMove); ttValue != NoHashEntry {
+		return ttValue
+	}
+	// Si nodo es terminal
 	if depth == 0 {
-		return evaluation.Evaluate(b) //Quiesce
+		var eval int16 = evaluation.Evaluate(b)
+		//recordHash(b.Hash,eval,depth,TTExact,¿¿¿¿bestmove????)
+		return eval //Quiesce
 	}
 	var color uint8 = b.WhiteToMove
 	var bSearchPv bool = true
@@ -59,11 +70,13 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 	var kingSquare board.Square
 	var hasLegalMove bool
 	var score int16
+	var bestScore int16 = math.MinInt16
 	b.GeneratePseudoMoves(&moves)
 	//Aplicar ordenamiento de movimientos aqui
 
 	for i := 0; i < int(moves.Index); i++ {
-		b.MakeMove(moves.List[i])
+		var move board.Move = moves.List[i]
+		b.MakeMove(move)
 		kingSquare = board.Square(bits.TrailingZeros64(b.Bitboards[color][board.King]))
 		if !b.IsUnderAttack(kingSquare, color) { //Si el movimiento es legal!
 			hasLegalMove = true
@@ -75,16 +88,24 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 					score = -PVSearch(b, -beta, -alpha, depth-1) // re-search
 				}
 			}
-			b.UnMakeMove(moves.List[i])
+			b.UnMakeMove(move)
 			if score >= beta {
+				recordHash(b.Hash, beta, depth, TTLowerBound, move)
 				return beta // fail-hard beta-cutoff
 			}
 			if score > alpha {
+				hashFlag = TTExact
 				alpha = score     // alpha acts like max in MiniMax
 				bSearchPv = false // Probar luego sacando esta sentencia de esta condición
 			}
+			//Se recolecta el mejor movimiento posible de la posición
+			if score > bestScore { // UpperBound y Exact
+				bestMove = move
+				bestScore = score
+			}
+
 		} else {
-			b.UnMakeMove(moves.List[i])
+			b.UnMakeMove(move)
 		}
 	}
 	if !hasLegalMove {
@@ -95,7 +116,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 			return 0 //Tablas por ahogado
 		}
 	}
-
+	recordHash(b.Hash, alpha, depth, hashFlag, bestMove)
 	return alpha
 }
 
@@ -108,21 +129,22 @@ func zwSearch(b *board.Board, beta int16, depth uint8) int16 {
 	var kingSquare board.Square
 	var color uint8 = b.WhiteToMove
 	var score int16
+	var move board.Move
 	b.GeneratePseudoMoves(&moves)
 	//Aplicar ordenamiento de movimientos aqui
 
 	for i := 0; i < int(moves.Index); i++ {
-		b.MakeMove(moves.List[i])
+		move = moves.List[i]
+		b.MakeMove(move)
 		kingSquare = board.Square(bits.TrailingZeros64(b.Bitboards[color][board.King]))
 		if !b.IsUnderAttack(kingSquare, color) { //Si el movimiento es legal!
 			score = -zwSearch(b, 1-beta, depth-1)
-			b.UnMakeMove(moves.List[i])
+			b.UnMakeMove(move)
 			if score >= beta {
-
 				return beta // fail-hard beta-cutoff
 			}
 		} else {
-			b.UnMakeMove(moves.List[i])
+			b.UnMakeMove(move)
 		}
 	}
 	return beta - 1 // fail-hard, return alpha
