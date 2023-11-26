@@ -36,6 +36,7 @@ Nicarao is a basic chess engine written in Go by Deybis Melendez.
 
 ### Evaluation
 
+-   Quiescence
 -   Material
 -   Mobility
 -   Piece Square Table (TODO)
