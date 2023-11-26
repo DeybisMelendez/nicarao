@@ -34,6 +34,11 @@ func probeHash(hash uint64, alpha int16, beta int16, depth uint8, move *board.Mo
 	return NoHashEntry
 }
 
+func GetBestMove(hash uint64) board.Move {
+	var entry TranspositionTable = transpositionTable[hash%ttSize]
+	return entry.BestMove
+}
+
 /*func getPV(fen string, depth int8, bestmove board.Move) string {
 	var pv string
 	var board board.Board = chess.ParseFen(fen)
