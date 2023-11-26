@@ -40,7 +40,6 @@ func scoreMoves(b *board.Board, moves *board.MoveList, oldBestMove board.Move) {
 	}
 }
 
-//TODO: Hacer una prueba unitaria
 func recapturedValue(b *board.Board, move board.Move) uint8 {
 	b.MakeMove(move)
 	var captures board.MoveList

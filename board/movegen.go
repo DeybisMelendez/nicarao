@@ -102,7 +102,6 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color uint
 	}
 }
 
-// TODO: Hacer pruebas unitarias para las pseudo capturas
 func (s *Board) GeneratePseudoCaptures(moves *MoveList, square Square) {
 	s.saveUnMakeInfo()
 	var color uint8 = s.WhiteToMove
