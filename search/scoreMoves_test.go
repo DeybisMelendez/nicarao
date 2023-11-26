@@ -25,7 +25,7 @@ func TestRecapturedValue(t *testing.T) {
 		var moves board.MoveList
 		var b board.Board
 		b.ParseFEN(tc.fen)
-		b.GeneratePseudoCaptures(&moves, tc.square)
+		b.GeneratePseudoCaptureSquare(&moves, tc.square)
 		var value uint8 = recapturedValue(&b, moves.List[0])
 		if value != tc.value {
 			t.Errorf("FEN: %s, Valor: %d, Resultado: %d", tc.fen, tc.value, value)

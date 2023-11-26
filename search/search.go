@@ -60,7 +60,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 	}
 	// Si nodo es terminal
 	if depth == 0 {
-		var eval int16 = evaluation.Evaluate(b)
+		var eval int16 = evaluation.Quiesce(b, alpha, beta) //evaluation.Evaluate(b)
 		//recordHash(b.Hash,eval,depth,TTExact,¿¿¿¿bestmove????)
 		return eval //Quiesce
 	}

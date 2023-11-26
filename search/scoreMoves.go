@@ -54,7 +54,7 @@ func recapturedValue(b *board.Board, move board.Move) uint8 {
 	var kingSquare board.Square
 	var color uint8 = b.WhiteToMove // La legalidad debe ser probada en el turno enemigo
 	var valueCapture uint8
-	b.GeneratePseudoCaptures(&captures, move.To())
+	b.GeneratePseudoCaptureSquare(&captures, move.To())
 	for i := 0; i < int(captures.Index); i++ {
 		captureMove = captures.List[i]
 		b.MakeMove(captureMove)

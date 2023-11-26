@@ -21,7 +21,7 @@ func TestGeneratePseudoCaptures(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		var moves MoveList
-		b.GeneratePseudoCaptures(&moves, tc.square)
+		b.GeneratePseudoCaptureSquare(&moves, tc.square)
 		if moves.Index != tc.captures {
 			t.Errorf("Casilla: %d, Capturas: %d, Resultado: %d", tc.square, tc.captures, moves.Index)
 		}
