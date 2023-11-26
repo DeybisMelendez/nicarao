@@ -48,13 +48,16 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 		//recordHash(b.Hash,eval,depth,TTExact,¿¿¿¿bestmove????)
 		return eval //Quiesce
 	}
-	if bestMove == 0 && depth > 5 { // Si no hay hash move previo
-		// Internal Iterative Deepening
-		for i := uint8(1); i < depth/2; i++ {
-			PVSearch(b, alpha, beta, i)
+	if internalIDIsActive {
+		if bestMove == 0 && depth > internalIDminDepth { // Si no hay hash move previo
+			// Internal Iterative Deepening
+			for i := uint8(1); i < depth/2; i++ {
+				PVSearch(b, alpha, beta, i)
+			}
+			bestMove = GetBestMove(b.Hash)
 		}
-		bestMove = GetBestMove(b.Hash)
 	}
+
 	var color uint8 = b.WhiteToMove
 	var bSearchPv bool = true
 	var moves board.MoveList

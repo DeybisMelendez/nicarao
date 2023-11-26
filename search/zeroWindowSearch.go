@@ -26,7 +26,7 @@ int zwSearch(int beta, int depth ) {
 //fail-hard zero window search, returns either beta-1 or beta
 func zwSearch(b *board.Board, beta int16, depth uint8) int16 {
 	if depth == 0 {
-		return evaluation.Evaluate(b) //Quiesce
+		return evaluation.Evaluate(b) //Quiesce tarda demasiado?
 	}
 	var moves board.MoveList
 	var kingSquare board.Square

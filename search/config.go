@@ -5,8 +5,10 @@ const killerMovesMaxPly = 12
 const LMRFullDepthMoves = 3
 const LMReductionLimit = 3
 const deltaPruning int16 = 900
+const internalIDminDepth = 2
 
 //Switches
 const LMRisActive bool = true
 const orderingMoveIsActive bool = true
 const deltaPruningisActive bool = true
+const internalIDIsActive bool = true
