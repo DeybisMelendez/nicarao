@@ -71,11 +71,32 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 	var hasLegalMove bool
 	var score int16
 	var bestScore int16 = math.MinInt16
+	var minIndexMoves uint8
+	var scoreMove uint8
 	b.GeneratePseudoMoves(&moves)
 	//Aplicar ordenamiento de movimientos aqui
+	scoreMoves(b, &moves, bestMove) // ¿¡Posiblemente sea mejor intentar puntuar solo jugadas legales!?
+	// Selection Sort de mayor a menor
+	for minIndexMoves < moves.Index {
+		var bestI uint8 = minIndexMoves
+		for i := minIndexMoves; i < moves.Index; i++ { // Se itera a través de los pseudo moves
+			var move board.Move = moves.List[i]
+			var newScore uint8 = move.GetScore()
+			if newScore > scoreMove {
+				scoreMove = newScore
+				bestI = i
+			}
+		}
+		//Intercambiamos el mejor pseudo move y lo colocamos al inicio para no volverlo a revisar
+		moves.List[bestI], moves.List[minIndexMoves] = moves.List[minIndexMoves], moves.List[bestI]
 
-	for i := 0; i < int(moves.Index); i++ {
-		var move board.Move = moves.List[i]
+		//Recuperamos el pseudo move mejor evaluado actual
+		var move board.Move = moves.List[minIndexMoves]
+
+		//Sumamos el indice para no evaluar movimientos ya evaluados
+		minIndexMoves++
+
+		// Ejecutamos el PVSearch
 		b.MakeMove(move)
 		kingSquare = board.Square(bits.TrailingZeros64(b.Bitboards[color][board.King]))
 		if !b.IsUnderAttack(kingSquare, color) { //Si el movimiento es legal!
@@ -104,7 +125,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 				bestScore = score
 			}
 
-		} else {
+		} else { // Si el movimiento es ilegal deshacemos y continuamos con el siguiente
 			b.UnMakeMove(move)
 		}
 	}

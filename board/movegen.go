@@ -101,3 +101,72 @@ func (s *Board) GeneratePseudoMovesForPiece(piece Piece, from Square, color uint
 		}
 	}
 }
+
+// TODO: Hacer pruebas unitarias para las pseudo capturas
+func (s *Board) GeneratePseudoCaptures(moves *MoveList, square Square) {
+	s.saveUnMakeInfo()
+	var color uint8 = s.WhiteToMove
+	var from Square
+	var pieceBoard uint64
+	var captureMask uint64 = 1 << square
+	var attacks uint64
+	var to Square
+	var capture Piece
+	var enemy = s.GetEnemyColor()
+	for _, piece := range pieceTypes {
+		pieceBoard = s.Bitboards[color][piece]
+		for pieceBoard != 0 {
+			from = Square(bits.TrailingZeros64(pieceBoard))
+			switch piece {
+			case Pawn:
+				attacks = s.GetPawnAttacks(from, color) & captureMask
+				for attacks != 0 {
+					to = Square(bits.TrailingZeros64(attacks))
+					capture = s.GetPiece(to, enemy)
+					if ((1<<to)&Rank1 != 0) || ((1<<to)&Rank8 != 0) { //Coronación de peón
+						for _, promo := range piecePromotions {
+							moves.Push(NewMove(piece, from, to, capture, promo, CapturePromotion))
+						}
+					} else if s.Enpassant == to { //Captura al paso
+						moves.Push(NewMove(piece, from, to, 0, 0, EnpassantCapture))
+					} else {
+						moves.Push(NewMove(piece, from, to, capture, 0, Capture)) //Capturas de peón
+					}
+					attacks &= attacks - 1
+				}
+			case Knight, Bishop, Rook, Queen:
+				switch piece {
+				case Knight:
+					attacks = s.GetKnightAttacks(from, color) & captureMask
+				case Bishop:
+					attacks = s.GetBishopAttacks(from, color) & captureMask
+				case Rook:
+					attacks = s.GetRookAttacks(from, color) & captureMask
+				case Queen:
+					attacks = (s.GetBishopAttacks(from, color) | s.GetRookAttacks(from, color)) & captureMask
+				}
+				for attacks != 0 {
+					to = Square(bits.TrailingZeros64(attacks))
+					capture = None
+					if s.IsCapture(to) {
+						capture = s.GetPiece(to, enemy)
+						moves.Push(NewMove(piece, from, to, capture, 0, Capture))
+					}
+					attacks &= attacks - 1
+				}
+			case King:
+				attacks = s.GetKingAttacks(from, color) & captureMask
+				for attacks != 0 {
+					to = Square(bits.TrailingZeros64(attacks))
+					capture = None
+					if s.IsCapture(to) {
+						capture = s.GetPiece(to, enemy)
+						moves.Push(NewMove(piece, from, to, capture, 0, Capture))
+					}
+					attacks &= attacks - 1
+				}
+			}
+			pieceBoard &= pieceBoard - 1
+		}
+	}
+}

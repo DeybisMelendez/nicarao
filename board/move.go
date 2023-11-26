@@ -10,6 +10,7 @@ func NewMove(piece Piece, from Square, to Square, capture Piece, promo Piece, fl
 		((uint32(capture) & 0x7) << 15) | // 3 bits Representa piezas 0-7
 		((uint32(promo) & 0x7) << 18) | // 3 bits Representa piezas 0-7
 		((uint32(flag) & 0x7) << 21)) // 3 bits Representa flags 0-7
+	//8 bits restantes pueden aprovecharse para move ordering
 }
 
 //GETTERS
@@ -39,6 +40,10 @@ func (m *Move) Flag() MoveFlag {
 	return MoveFlag((*m >> 21) & 0x7)
 }
 
+func (m *Move) GetScore() uint8 {
+	return uint8((*m >> 24) & 0xFF)
+}
+
 //SETTERS
 
 func (m *Move) SetPiece(piece Piece) {
@@ -64,6 +69,11 @@ func (m *Move) SetPromotion(piece Piece) {
 func (m *Move) SetFlag(flag MoveFlag) {
 	*m = Move((uint32(flag) & 0x7 << 21) | (uint32(*m) &^ (0x7 << 21)))
 }
+
+func (m *Move) SetScore(score uint8) {
+	*m = Move((uint32(score) & 0xff << 24) | (uint32(*m) &^ (0xff << 24)))
+}
+
 func (m Move) MoveToString() string {
 	from := int(m.From())
 	to := int(m.To())
