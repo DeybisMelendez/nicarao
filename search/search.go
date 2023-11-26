@@ -111,6 +111,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 			}
 			b.UnMakeMove(move)
 			if score >= beta {
+				saveKillerMove(b.Ply, move)
 				recordHash(b.Hash, beta, depth, TTLowerBound, move, b.HalfmoveClock)
 				return beta // fail-hard beta-cutoff
 			}

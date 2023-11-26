@@ -26,5 +26,4 @@ const (
 )
 const MB = 1024 * 1024 // Tamaño en bytes de 1 MB
 // 16 bytes suman los bytes contenidos teóricamente por el struct TranspositionTable
-const ttSize uint64 = 64 * MB / 18
 const NoHashEntry = math.MinInt16

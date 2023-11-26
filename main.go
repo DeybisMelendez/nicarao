@@ -8,7 +8,7 @@ import (
 
 func main() {
 	var test board.Board
-	test.ParseFEN("8/1p3rk1/p6p/6p1/2P3P1/2bQ3K/P2p2P1/3Rq3 w - - 3 36")
+	test.ParseFEN("1n2R3/2N5/3bBp2/1Kp1p3/1p1Pkpp1/3N4/3PPQ1n/3r4 w - - 0 1")
 	for i := uint8(1); i < 16; i++ {
 		var score int16 = search.PVSearch(&test, -search.Inf, search.Inf, i)
 		fmt.Println(i, score)

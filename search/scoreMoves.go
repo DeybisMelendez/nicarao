@@ -29,13 +29,15 @@ func scoreMoves(b *board.Board, moves *board.MoveList, oldBestMove board.Move) {
 			flag == board.Promotion { // Capturas
 			var captureValue int8 = int8(pieceCaptureValue[move.Capture()]) - int8(recapturedValue(b, move))
 			if flag == board.CapturePromotion || flag == board.Promotion {
-				captureValue += int8(pieceCaptureValue[move.Promotion()])
+				captureValue += int8(pieceCaptureValue[move.Promotion()]) - 1 //Se resta 1 por el peón
 			}
 			if captureValue >= 0 {
 				moves.List[i].SetScore(236 + uint8(captureValue))
 			} else {
 				moves.List[i].SetScore(8 - uint8(captureValue))
 			}
+		} else if isKillerMove(b.Ply, move) > 0 { //Killer moves
+			moves.List[i].SetScore(233 + isKillerMove(b.Ply, move))
 		} // TODO: Agregar el resto de casos de ordenamiento
 	}
 }
