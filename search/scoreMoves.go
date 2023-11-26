@@ -13,8 +13,8 @@ ORDEN DE LOS MOVIMIENTOS 0-255 (uint8):
 4. 235 Movimiento asesino (Killer move) #1
 5. 234 Movimiento asesino (Killer move) #2
 6. 233 Counter Move
-6. 232 - 223 = 9 Movimientos tranquilos ordenados por History Moves o ¿¡Piece Square Table!?
-7. 8 - 8 = 0 Capturas/Promociones perdedoras** (pieza capturada + Promoción - pieza recapturada = saldo negativo)
+7. 232 - 223 = 9 Movimientos tranquilos ordenados por History Moves o ¿¡Piece Square Table!?
+8. 8 - 8 = 0 Capturas/Promociones perdedoras** (pieza capturada + Promoción - pieza recapturada = saldo negativo)
 
 * El maximo valor (positivo) conseguible es Queen(9) + Queen(9) - None(0) = 18
 ** El mínimo valor (negativo) conseguible sería Pawn(1) + None(0) - Queen(9) = -8
@@ -41,9 +41,9 @@ func scoreMoves(b *board.Board, moves *board.MoveList, oldBestMove board.Move) {
 			moves.List[i].SetScore(233 + isKillerMove(b.Ply, move))
 		} else if isCounterMove(b.GetEnemyColor(), move) { //Como se hizo make, el color de la pieza sería el del enemigo
 			moves.List[i].SetScore(233)
-		} else {
-			moves.List[i].SetScore(9)
-		} // TODO: Agregar el resto de casos de ordenamiento
+		} else { //History moves
+			moves.List[i].SetScore(9 + getHistoryMove(b.GetEnemyColor(), move))
+		}
 	}
 }
 

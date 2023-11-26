@@ -36,11 +36,12 @@ func TestMatedIn(t *testing.T) {
 		//{3, "1n2R3/2N5/3bBp2/1Kp1p3/1p1Pkpp1/3N4/3PPQ1n/3r4 w - - 0 1", "5.- Mate en 3"}, //FIXME: No encuentra todos mates
 
 		{4, "8/1P5B/8/2P5/8/6K1/NkP3p1/RN6 w - - 0 1", "1.- Mate en 4"},
+		{4, "2NK3k/2Np4/1p6/1b1P4/p1p2pRp/2r2p2/5P2/4n1n1 w - - 0 1", "2.- Mate en 4"}, // Tarda 1 segundo!
+
 		//{4, "rnbq2k1/ppp1b1p1/6P1/3p4/3P1P2/6r1/PP4P1/R2QKB1R w KQ - 0 16", "2.- Mate en 4"},
 
 		//{6, "2r1b3/3P4/3n1prp/2p2Nbk/q7/4N3/2p5/3n3K w - - 0 1", "1.- Mate en 7"},
 
-		//{4, "2NK3k/2Np4/1p6/1b1P4/p1p2pRp/2r2p2/5P2/4n1n1 w - - 0 1", "Mate en 4"},
 	}
 
 	for _, tc := range testCases {

@@ -28,7 +28,7 @@ Nicarao is a basic chess engine written in Go by Deybis Melendez.
     -   Simple Recapture Evaluation
     -   Killer Heuristic
     -   Counter Move Heuristic
-    -   History Heuristic (TODO)
+    -   History Heuristic
 
 -   Selectivity:
     -   Late Move Reduction (LMR)
