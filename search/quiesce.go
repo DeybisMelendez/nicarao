@@ -51,6 +51,11 @@ func Quiesce(b *board.Board, alpha int16, beta int16) int16 {
 			if score >= beta {
 				return beta
 			}
+			if deltaPruningisActive {
+				if score < alpha-deltaPruning {
+					return alpha
+				}
+			}
 			if score > alpha {
 				alpha = score
 			}
