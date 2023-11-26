@@ -32,11 +32,10 @@ Nicarao is a basic chess engine written in Go by Deybis Melendez.
 
 -   Selectivity:
     -   Late Move Reduction (LMR) (TODO)
-    -   Quiescence (TODO)
+    -   Quiescence
 
 ### Evaluation
 
--   Quiescence
 -   Material
 -   Mobility
 -   Piece Square Table (TODO)

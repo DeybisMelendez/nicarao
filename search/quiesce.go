@@ -1,8 +1,9 @@
-package evaluation
+package search
 
 import (
 	"math/bits"
 	"nicarao/board"
+	"nicarao/evaluation"
 )
 
 /*
@@ -28,7 +29,7 @@ int Quiesce( int alpha, int beta ) {
 */
 
 func Quiesce(b *board.Board, alpha int16, beta int16) int16 {
-	var standPat = Evaluate(b)
+	var standPat = evaluation.Evaluate(b)
 	if standPat >= beta {
 		return beta
 	}
