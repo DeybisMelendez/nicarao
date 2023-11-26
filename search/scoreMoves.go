@@ -12,6 +12,7 @@ ORDEN DE LOS MOVIMIENTOS 0-255 (uint8):
 3. 236 Capturas/Promociones** igualadas (pieza capturada + Promoción - pieza recapturada = 0)
 4. 235 Movimiento asesino (Killer move) #1
 5. 234 Movimiento asesino (Killer move) #2
+6. 233 Counter Move
 6. 232 - 223 = 9 Movimientos tranquilos ordenados por History Moves o ¿¡Piece Square Table!?
 7. 8 - 8 = 0 Capturas/Promociones perdedoras** (pieza capturada + Promoción - pieza recapturada = saldo negativo)
 
@@ -34,10 +35,14 @@ func scoreMoves(b *board.Board, moves *board.MoveList, oldBestMove board.Move) {
 			if captureValue >= 0 {
 				moves.List[i].SetScore(236 + uint8(captureValue))
 			} else {
-				moves.List[i].SetScore(8 - uint8(captureValue))
+				moves.List[i].SetScore(8 + uint8(captureValue)) // Se suma porque el captureValue es negativo
 			}
 		} else if isKillerMove(b.Ply, move) > 0 { //Killer moves
 			moves.List[i].SetScore(233 + isKillerMove(b.Ply, move))
+		} else if isCounterMove(b.GetEnemyColor(), move) { //Como se hizo make, el color de la pieza sería el del enemigo
+			moves.List[i].SetScore(233)
+		} else {
+			moves.List[i].SetScore(9)
 		} // TODO: Agregar el resto de casos de ordenamiento
 	}
 }
