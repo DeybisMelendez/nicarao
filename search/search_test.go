@@ -41,7 +41,6 @@ func TestMatedIn(t *testing.T) {
 		//{4, "rnbq2k1/ppp1b1p1/6P1/3p4/3P1P2/6r1/PP4P1/R2QKB1R w KQ - 0 16", "2.- Mate en 4"},
 
 		//{6, "2r1b3/3P4/3n1prp/2p2Nbk/q7/4N3/2p5/3n3K w - - 0 1", "1.- Mate en 7"},
-
 	}
 
 	for _, tc := range testCases {

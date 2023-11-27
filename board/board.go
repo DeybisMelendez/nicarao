@@ -39,9 +39,11 @@ type Board struct {
 
 	//Indica la profundidad alcanzada por el tablero
 	Ply int16
+	//Indica la cantidad de nodos por los que ha pasado el board
+	Nodes int
 }
 
-func MakeNull(b *Board) *Board {
+func (b *Board) MakeNull() *Board {
 	var nullBoard *Board = &Board{
 		WhiteToMove: b.GetEnemyColor(),
 		Bitboards: [2][7]uint64{
@@ -64,8 +66,8 @@ func MakeNull(b *Board) *Board {
 			},
 		},
 		Castling: b.Castling,
-		friends:  b.friends,
-		enemies:  b.enemies,
+		friends:  b.enemies,
+		enemies:  b.friends,
 		occupied: b.occupied,
 		Ply:      b.Ply,
 	}

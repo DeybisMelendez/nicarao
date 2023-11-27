@@ -12,6 +12,7 @@ func (s *Board) MakeMove(move Move) {
 	var fromBB uint64 = 1 << from
 	var fromToBB uint64 = fromBB ^ toBB
 
+	s.Nodes++
 	s.Ply++
 	s.HalfmoveClock++
 	s.pushUnMakeInfo()

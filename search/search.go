@@ -39,8 +39,10 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 	//Transposition Table
 	var bestMove board.Move
 	var hashFlag uint8 = TTUpperBound
-	if ttValue := probeHash(b.Hash, alpha, beta, depth, &bestMove, b.HalfmoveClock); ttValue != NoHashEntry {
-		return ttValue
+	if isTranspositionTableActive {
+		if ttValue := probeHash(b.Hash, alpha, beta, depth, &bestMove, b.HalfmoveClock); ttValue != NoHashEntry {
+			return ttValue
+		}
 	}
 	// Si nodo es terminal
 	if depth == 0 {
@@ -69,6 +71,17 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 	var scoreMove uint8
 	var newDepth uint8
 	var movesNoFailsHigh = 0
+	var isLegal bool
+	var ourKing board.Square   //= board.Square(bits.TrailingZeros64(b.Bitboards[b.WhiteToMove][board.King]))
+	var enemyKing board.Square //= board.Square(bits.TrailingZeros64(b.Bitboards[b.GetEnemyColor()][board.King]))
+	var isInCheck bool         // = b.IsUnderAttack(ourKing, b.WhiteToMove)
+	var givingCheck bool       //= b.IsUnderAttack(enemyKing, b.GetEnemyColor())
+	if (depth >= LMRFullDepthMoves && LMRisActive) || (depth > nullMovePruningR && isNullMovePruningActive) {
+		ourKing = board.Square(bits.TrailingZeros64(b.Bitboards[b.WhiteToMove][board.King]))
+		enemyKing = board.Square(bits.TrailingZeros64(b.Bitboards[b.GetEnemyColor()][board.King]))
+		isInCheck = b.IsUnderAttack(ourKing, b.WhiteToMove)
+		givingCheck = b.IsUnderAttack(enemyKing, b.GetEnemyColor())
+	}
 	b.GeneratePseudoMoves(&moves)
 	//Aplicar ordenamiento de movimientos aqui
 	if orderingMoveIsActive {
@@ -96,21 +109,31 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 		//Sumamos el indice para no evaluar movimientos ya evaluados
 		minIndexMoves++
 
+		//Mull Nove Pruning
+		if isNullMovePruningActive && depth > nullMovePruningR && depth > nullMovePruningLimit {
+			if !isInCheck && !givingCheck { // Si no está en jaque
+				var nullBoard *board.Board = b.MakeNull()
+				score = -zwSearch(nullBoard, -beta+1, depth-1-nullMovePruningR)
+				if score >= beta {
+					return beta
+				}
+			}
+		}
 		newDepth = depth - 1
-		//Aplicamos Late Move Reduction
+		//Late Move Reduction
 		if LMRisActive {
 			if !bSearchPv && movesNoFailsHigh >= LMRFullDepthMoves && depth >= LMReductionLimit && LMRisOk(move) {
-				var ourKing = board.Square(bits.TrailingZeros64(b.Bitboards[b.WhiteToMove][board.King]))
-				var enemyKing = board.Square(bits.TrailingZeros64(b.Bitboards[b.GetEnemyColor()][board.King]))
-				if !b.IsUnderAttack(ourKing, b.WhiteToMove) && !b.IsUnderAttack(enemyKing, b.GetEnemyColor()) { // Si no está en jaque
+				if !isInCheck && !givingCheck { // Si no está en jaque
 					newDepth = depth / 2
 				}
 			}
 		}
-		// Ejecutamos el PVSearch
+		//PVSearch
 		b.MakeMove(move)
 		kingSquare = board.Square(bits.TrailingZeros64(b.Bitboards[color][board.King]))
-		if !b.IsUnderAttack(kingSquare, color) { //Si el movimiento es legal!
+		isLegal = !b.IsUnderAttack(kingSquare, color)
+
+		if isLegal { //Si el movimiento es legal!
 			hasLegalMove = true
 			if bSearchPv {
 				score = -PVSearch(b, -beta, -alpha, newDepth)
@@ -127,7 +150,9 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 					saveCounterMove(color, move)
 					saveHistoryMove(color, move, newDepth)
 				}
-				recordHash(b.Hash, beta, depth, TTLowerBound, move, b.HalfmoveClock)
+				if isTranspositionTableActive {
+					recordHash(b.Hash, beta, depth, TTLowerBound, move, b.HalfmoveClock)
+				}
 				return beta // fail-hard beta-cutoff
 			}
 			if score > alpha {
@@ -154,6 +179,8 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 			return 0 //Tablas por ahogado
 		}
 	}
-	recordHash(b.Hash, alpha, depth, hashFlag, bestMove, b.HalfmoveClock)
+	if isTranspositionTableActive {
+		recordHash(b.Hash, alpha, depth, hashFlag, bestMove, b.HalfmoveClock)
+	}
 	return alpha
 }

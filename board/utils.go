@@ -9,11 +9,12 @@ func (s *Board) FlipTurn() {
 }
 
 func (s *Board) GetEnemyColor() uint8 {
-	if s.WhiteToMove == White {
+	return s.WhiteToMove ^ 1
+	/*if s.WhiteToMove == White {
 		return Black
 	} else {
 		return White
-	}
+	}*/
 }
 
 //GetAll devuelve un bitboard con todas las casillas ocupadas del jugador indicado

@@ -59,6 +59,7 @@ func (s *Board) ParseFEN(fen string) error {
 	s.enemies = s.GetAll(s.GetEnemyColor())
 	s.occupied = s.friends | s.enemies
 	s.calcZobristHash()
+	s.Nodes = 0
 	return nil
 }
 
