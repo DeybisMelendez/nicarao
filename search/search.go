@@ -102,7 +102,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 			if movesNoFailsHigh >= LMRFullDepthMoves && depth >= LMReductionLimit && LMRisOk(move) {
 				var king = board.Square(bits.TrailingZeros64(b.Bitboards[b.WhiteToMove][board.King]))
 				if !b.IsUnderAttack(king, b.WhiteToMove) { // Si no está en jaque
-					newDepth = depth / 2
+					newDepth = depth / 4
 				}
 			}
 		}
@@ -123,8 +123,8 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 			if score >= beta {
 				if move.Capture() == board.None {
 					saveKillerMove(b.Ply, move)
-					saveCounterMove(b.GetEnemyColor(), move)
-					saveHistoryMove(b.GetEnemyColor(), move, newDepth)
+					saveCounterMove(color, move)
+					saveHistoryMove(color, move, newDepth)
 				}
 				recordHash(b.Hash, beta, depth, TTLowerBound, move, b.HalfmoveClock)
 				return beta // fail-hard beta-cutoff

@@ -5,6 +5,8 @@ import "nicarao/board"
 //https://www.chessprogramming.org/Countermove_Heuristic
 var counterMoves [2][7][64]board.Move
 
+//var counterMoveBonuts uint8 = 100
+
 func saveCounterMove(color uint8, move board.Move) {
 	move.SetScore(0) //Debemos eliminar la puntuación para comparar correctamente
 	counterMoves[color][move.Piece()][move.To()] = move

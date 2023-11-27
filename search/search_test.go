@@ -49,7 +49,7 @@ func TestMatedIn(t *testing.T) {
 		var score int16
 		var mate int16
 		b.ParseFEN(tc.fen)
-		for i := uint8(1); i < 12; i++ {
+		for i := uint8(1); i < 18; i++ {
 			score = PVSearch(&b, -Inf, Inf, i)
 			if 1+(MateValue-score)/2 == tc.mateIn {
 				mate = tc.mateIn
