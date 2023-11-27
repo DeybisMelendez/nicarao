@@ -27,7 +27,7 @@ func TestZobristHash(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		var board Board = *NewBoard()
+		var board Board = Board{}
 		board.ParseFEN(tc.fen)
 		var originalHash = board.Hash
 		Perft(&board, tc.depth)

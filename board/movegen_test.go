@@ -3,7 +3,7 @@ package board
 import "testing"
 
 func TestGeneratePseudoCaptures(t *testing.T) {
-	var b Board = *NewBoard()
+	var b Board = Board{}
 	b.ParseFEN("7k/8/8/1B6/pRp5/3p4/pNP5/K2b1Q2 w - - 0 1")
 
 	type testCase struct {

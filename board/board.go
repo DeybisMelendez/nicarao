@@ -41,27 +41,36 @@ type Board struct {
 	Ply int16
 }
 
-func NewBoard() *Board {
-	return &Board{
-		/*Bitboards: map[bool]map[Piece]uint64{
+func MakeNull(b *Board) *Board {
+	var nullBoard *Board = &Board{
+		WhiteToMove: b.GetEnemyColor(),
+		Bitboards: [2][7]uint64{
+
 			White: {
-				Pawn:   0,
-				Knight: 0,
-				Bishop: 0,
-				Rook:   0,
-				Queen:  0,
-				King:   0,
+				Pawn:   b.Bitboards[White][Pawn],
+				Knight: b.Bitboards[White][Knight],
+				Bishop: b.Bitboards[White][Bishop],
+				Rook:   b.Bitboards[White][Rook],
+				Queen:  b.Bitboards[White][Queen],
+				King:   b.Bitboards[White][King],
 			},
 			Black: {
-				Pawn:   0,
-				Knight: 0,
-				Bishop: 0,
-				Rook:   0,
-				Queen:  0,
-				King:   0,
+				Pawn:   b.Bitboards[Black][Pawn],
+				Knight: b.Bitboards[Black][Knight],
+				Bishop: b.Bitboards[Black][Bishop],
+				Rook:   b.Bitboards[Black][Rook],
+				Queen:  b.Bitboards[Black][Queen],
+				King:   b.Bitboards[Black][King],
 			},
-		},*/
+		},
+		Castling: b.Castling,
+		friends:  b.friends,
+		enemies:  b.enemies,
+		occupied: b.occupied,
+		Ply:      b.Ply,
 	}
+	nullBoard.calcZobristHash()
+	return nullBoard
 }
 
 func (s *Board) Print() {
