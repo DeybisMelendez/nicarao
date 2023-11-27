@@ -40,14 +40,36 @@ func Quiesce(b *board.Board, alpha int16, beta int16) int16 {
 	var color uint8 = b.WhiteToMove
 	var kingSquare board.Square
 	var score int16
+	var minIndexMoves uint8
+	var scoreMove uint8
+	var bestI uint8
 	b.GeneratePseudoCaptures(&captures)
+	scoreCaptures(&captures)
+	for minIndexMoves < captures.Index {
+		if orderingMoveIsActive {
+			bestI = minIndexMoves
+			for i := minIndexMoves; i < captures.Index; i++ { // Se itera a través de los pseudo moves
+				var move board.Move = captures.List[i]
+				var newScore uint8 = move.GetScore()
+				if newScore > scoreMove {
+					scoreMove = newScore
+					bestI = i
+				}
+			}
+			//Intercambiamos el mejor pseudo move y lo colocamos al inicio para no volverlo a revisar
+			captures.List[bestI], captures.List[minIndexMoves] = captures.List[minIndexMoves], captures.List[bestI]
+		}
+		//Recuperamos el pseudo move mejor evaluado actual
+		var move board.Move = captures.List[minIndexMoves]
 
-	for i := 0; i < int(captures.Index); i++ {
-		b.MakeMove(captures.List[i])
+		//Sumamos el indice para no evaluar movimientos ya evaluados
+		minIndexMoves++
+
+		b.MakeMove(move)
 		kingSquare = board.Square(bits.TrailingZeros64(b.Bitboards[color][board.King]))
 		if !b.IsUnderAttack(kingSquare, color) { // Si la captura es legal
 			score = -Quiesce(b, -beta, -alpha)
-			b.UnMakeMove(captures.List[i])
+			b.UnMakeMove(move)
 			if score >= beta {
 				return beta
 			}
@@ -60,8 +82,10 @@ func Quiesce(b *board.Board, alpha int16, beta int16) int16 {
 				alpha = score
 			}
 		} else {
-			b.UnMakeMove(captures.List[i]) //Si es ilegal se deshace y pasa al siguiente
+			b.UnMakeMove(move) //Si es ilegal se deshace y pasa al siguiente
 		}
+	}
+	for i := 0; i < int(captures.Index); i++ {
 
 	}
 	return alpha

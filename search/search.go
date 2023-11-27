@@ -100,10 +100,10 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 		//Aplicamos Late Move Reduction
 		if LMRisActive {
 			if movesNoFailsHigh >= LMRFullDepthMoves && depth >= LMReductionLimit && LMRisOk(move) {
-				var king = board.Square(bits.TrailingZeros64(b.Bitboards[b.WhiteToMove][board.King]))
-				if !b.IsUnderAttack(king, b.WhiteToMove) { // Si no está en jaque
-					newDepth = depth / 4
-				}
+				//var king = board.Square(bits.TrailingZeros64(b.Bitboards[b.WhiteToMove][board.King]))
+				//if !b.IsUnderAttack(king, b.WhiteToMove) { // Si no está en jaque
+				newDepth = depth - 2
+				//}
 			}
 		}
 		// Ejecutamos el PVSearch

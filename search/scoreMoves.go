@@ -49,6 +49,12 @@ func scoreMoves(b *board.Board, moves *board.MoveList, oldBestMove board.Move) {
 	}
 }
 
+func scoreCaptures(moves *board.MoveList) {
+	for i := 0; i < int(moves.Index); i++ {
+		moves.List[i].SetScore(getMVV_LVA(moves.List[i]))
+	}
+}
+
 func recapturedValue(b *board.Board, move board.Move) uint8 {
 	b.MakeMove(move)
 	var captures board.MoveList
