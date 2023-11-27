@@ -99,11 +99,12 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 		newDepth = depth - 1
 		//Aplicamos Late Move Reduction
 		if LMRisActive {
-			if movesNoFailsHigh >= LMRFullDepthMoves && depth >= LMReductionLimit && LMRisOk(move) {
-				//var king = board.Square(bits.TrailingZeros64(b.Bitboards[b.WhiteToMove][board.King]))
-				//if !b.IsUnderAttack(king, b.WhiteToMove) { // Si no está en jaque
-				newDepth = depth - 2
-				//}
+			if !bSearchPv && movesNoFailsHigh >= LMRFullDepthMoves && depth >= LMReductionLimit && LMRisOk(move) {
+				var ourKing = board.Square(bits.TrailingZeros64(b.Bitboards[b.WhiteToMove][board.King]))
+				var enemyKing = board.Square(bits.TrailingZeros64(b.Bitboards[b.GetEnemyColor()][board.King]))
+				if !b.IsUnderAttack(ourKing, b.WhiteToMove) && !b.IsUnderAttack(enemyKing, b.GetEnemyColor()) { // Si no está en jaque
+					newDepth = depth / 2
+				}
 			}
 		}
 		// Ejecutamos el PVSearch
@@ -112,7 +113,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 		if !b.IsUnderAttack(kingSquare, color) { //Si el movimiento es legal!
 			hasLegalMove = true
 			if bSearchPv {
-				score = -PVSearch(b, -beta, -alpha, depth-1)
+				score = -PVSearch(b, -beta, -alpha, newDepth)
 			} else {
 				score = -zwSearch(b, -alpha, newDepth)
 				if score > alpha { // in fail-soft ... && score < beta ) is common
@@ -131,9 +132,9 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 			}
 			if score > alpha {
 				hashFlag = TTExact
-				alpha = score     // alpha acts like max in MiniMax
-				bSearchPv = false // Probar luego sacando esta sentencia de esta condición
-				movesNoFailsHigh++
+				alpha = score      // alpha acts like max in MiniMax
+				bSearchPv = false  // Probar luego sacando esta sentencia de esta condición
+				movesNoFailsHigh++ // Esta sentencia debería estar fuera de esta condición
 			}
 			//Se recolecta el mejor movimiento posible de la posición
 			if score > bestScore { // UpperBound y Exact
