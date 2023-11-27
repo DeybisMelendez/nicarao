@@ -14,5 +14,5 @@ const LMRisActive bool = true
 const orderingMoveIsActive bool = true
 const deltaPruningisActive bool = true
 const internalIDIsActive bool = true
-const isNullMovePruningActive bool = true // WIP
+const isNullMovePruningActive bool = true
 const isTranspositionTableActive bool = true
