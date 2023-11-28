@@ -6,7 +6,19 @@ Nicarao is a basic chess engine written in Go by Deybis Melendez.
 
 ### UCI Protocol
 
--   (TODO)
+-   commands:
+    -   uci
+    -   isready
+    -   ucinewgame
+    -   position startpos | fen
+    -   wtime, btime, winc, binc
+    -   depth (TODO)
+    -   movetime (TODO)
+    -   movestogo (TODO)
+    -   stop (TODO)
+    -   ponder (TODO)
+    -   mate (TODO)
+    -   infinite (TODO)
 
 ### Board
 
@@ -18,8 +30,8 @@ Nicarao is a basic chess engine written in Go by Deybis Melendez.
 ### Search
 
 -   Principal Variation Search with ZeroWindow Search
--   Iterative Deepening (TODO)
--   64 MB Transposition Table
+-   Iterative Deepening
+-   32 MB Transposition Table
 
 -   Move Ordering:
 
@@ -32,6 +44,7 @@ Nicarao is a basic chess engine written in Go by Deybis Melendez.
 
 -   Selectivity:
     -   Late Move Reduction (LMR)
+    -   Null Move Pruning
     -   Quiescence
     -   Delta Pruning
 

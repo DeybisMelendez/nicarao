@@ -29,6 +29,9 @@ int Quiesce( int alpha, int beta ) {
 */
 
 func Quiesce(b *board.Board, alpha int16, beta int16) int16 {
+	if isTimeToStop(b.Nodes) {
+		return 0
+	}
 	var standPat = evaluation.Evaluate(b)
 	if standPat >= beta {
 		return beta
