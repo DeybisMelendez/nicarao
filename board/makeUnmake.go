@@ -91,6 +91,7 @@ func (s *Board) MakeMove(move Move) {
 			s.Bitboards[enemy][Pawn] &= ^(1 << (to + 8))
 			s.enemies &= ^(1 << (to + 8))
 		}
+		s.HalfmoveClock = 0
 	}
 	// En caso de que aún existan derechos a enrocar
 	if s.Castling != 0 {
@@ -134,11 +135,8 @@ func (s *Board) MakeMove(move Move) {
 	}
 	s.Hash ^= uint64(s.Enpassant) //Colocamos el nuevo enpassant
 	s.FlipTurn()
-	var copyFriends uint64 = s.friends
-	s.friends = s.enemies
-	s.enemies = copyFriends
+	s.friends, s.enemies = s.enemies, s.friends
 	s.occupied = s.friends | s.enemies
-
 }
 
 func (s *Board) UnMakeMove(move Move) {
@@ -146,7 +144,6 @@ func (s *Board) UnMakeMove(move Move) {
 	s.popUnMakeInfo()
 	var color uint8 = s.GetEnemyColor()
 	var enemy uint8 = s.WhiteToMove
-	var copyFriends uint64 = s.friends
 	var piece = move.Piece()
 	var capture = move.Capture()
 	var promo = move.Promotion()
@@ -155,8 +152,7 @@ func (s *Board) UnMakeMove(move Move) {
 	var toBB uint64 = 1 << to
 	var fromBB uint64 = 1 << from
 	var fromToBB uint64 = fromBB ^ toBB
-	s.friends = s.enemies
-	s.enemies = copyFriends
+	s.friends, s.enemies = s.enemies, s.friends
 
 	switch move.Flag() {
 	case QuietMoves, DoublePawnPush:

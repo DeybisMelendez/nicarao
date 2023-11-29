@@ -1,20 +1,11 @@
 package board
 
 func (s *Board) FlipTurn() {
-	if s.WhiteToMove == White {
-		s.WhiteToMove = Black
-	} else {
-		s.WhiteToMove = White
-	}
+	s.WhiteToMove ^= 1
 }
 
 func (s *Board) GetEnemyColor() uint8 {
 	return s.WhiteToMove ^ 1
-	/*if s.WhiteToMove == White {
-		return Black
-	} else {
-		return White
-	}*/
 }
 
 //GetAll devuelve un bitboard con todas las casillas ocupadas del jugador indicado
