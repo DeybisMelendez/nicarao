@@ -56,7 +56,7 @@ func TestMatedIn(t *testing.T) {
 			}
 		}
 		if mate != tc.mateIn {
-			t.Errorf("%s, Solución: Mate en %d, Resultado: Mate en %d", tc.id, tc.mateIn, 1+(MateValue-score)/2)
+			t.Errorf("%s, Solución: Mate en %d, Resultado: Mate en %d, Score:%d", tc.id, tc.mateIn, 1+(MateValue-score)/2, score)
 		}
 	}
 }

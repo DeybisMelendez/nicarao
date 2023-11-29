@@ -171,7 +171,6 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 				bestMove = move
 				bestScore = score
 			}
-
 		} else { // Si el movimiento es ilegal deshacemos y continuamos con el siguiente
 			b.UnMakeMove(move)
 		}
