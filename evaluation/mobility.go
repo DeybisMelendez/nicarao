@@ -5,14 +5,19 @@ import (
 	"nicarao/board"
 )
 
-func mobilityEval(b *board.Board) int16 {
-	var total int
-	for i := 2; i < 7; i++ {
-		total += (getMobility(b, board.Piece(i), board.White) -
+func mobilityEval(b *board.Board) (int, int) {
+	var totalMG int
+	var totalEG int
+	for i := board.Knight; i < board.King; i++ {
+		//Debería cambiar a una tabla definiendo el bonus por cada casilla extra
+		totalMG += (getMobility(b, board.Piece(i), board.White) -
 			getMobility(b, board.Piece(i), board.Black)) *
-			MobilityOpeningWeights[i]
+			mobilityWeights[middleGame][i]
+		totalEG += (getMobility(b, board.Piece(i), board.White) -
+			getMobility(b, board.Piece(i), board.Black)) *
+			mobilityWeights[endGame][i]
 	}
-	return int16(total)
+	return (totalMG), (totalEG)
 }
 
 func getMobility(b *board.Board, piece board.Piece, color uint8) int {
@@ -34,8 +39,8 @@ func getMobility(b *board.Board, piece board.Piece, color uint8) int {
 			attacks |= b.GetRookAttacks(from, color)
 		case board.Queen:
 			attacks |= b.GetBishopAttacks(from, color) | b.GetRookAttacks(from, color)
-		case board.King:
-			attacks |= b.GetKingAttacks(from, color)
+			/*case board.King:
+			attacks |= b.GetKingAttacks(from, color)*/
 		}
 		pieceBoard &= pieceBoard - 1
 	}

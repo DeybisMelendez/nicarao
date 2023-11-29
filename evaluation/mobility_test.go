@@ -8,7 +8,7 @@ import (
 func TestMobilityValues(t *testing.T) {
 
 	type testCase struct {
-		mobility int16
+		mobility int
 		fen      string
 		id       string
 	}
@@ -23,7 +23,7 @@ func TestMobilityValues(t *testing.T) {
 	for _, tc := range testCases {
 		var b board.Board
 		b.ParseFEN(tc.fen)
-		var result int16 = mobilityEval(&b)
+		result, _ := mobilityEval(&b)
 		if result != tc.mobility {
 			t.Errorf("%s, Solución: %d cp, Resultado: %d cp", tc.id, tc.mobility, result)
 		}
