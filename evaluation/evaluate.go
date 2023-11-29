@@ -14,10 +14,10 @@ func Evaluate(b *board.Board) int16 {
 	materialMg, materialEg := materialEval(b)
 	mobilityMg, mobilityEg := mobilityEval(b)
 	//FIXME: VirtualMobility reduce la precisión del mate
-	//kingSafetyMg, kingSafetyEg := virtualMobility(b)
+	kingSafetyMg, kingSafetyEg := virtualMobility(b)
 
-	var opening = materialMg + mobilityMg // - kingSafetyMg
-	var endgame = materialEg + mobilityEg // - kingSafetyEg
+	var opening = materialMg + mobilityMg - kingSafetyMg
+	var endgame = materialEg + mobilityEg - kingSafetyEg
 	phase := (bits.OnesCount64(b.Bitboards[board.White][board.Knight]|b.Bitboards[board.Black][board.Knight]) * knightPhase) +
 		(bits.OnesCount64(b.Bitboards[board.White][board.Bishop]|b.Bitboards[board.Black][board.Bishop]) * bishopPhase) +
 		(bits.OnesCount64(b.Bitboards[board.White][board.Rook]|b.Bitboards[board.Black][board.Rook]) * rookPhase) +

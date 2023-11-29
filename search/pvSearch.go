@@ -126,7 +126,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 		if LMRisActive {
 			if !bSearchPv && movesNoFailsHigh >= LMRFullDepthMoves && depth >= LMReductionLimit && LMRisOk(move) {
 				if !isInCheck && !givingCheck { // Si no está en jaque
-					newDepth = depth / 2
+					newDepth = depth / 3
 				}
 			}
 		}
@@ -162,15 +162,17 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 			}
 			if score > alpha {
 				hashFlag = TTExact
-				alpha = score      // alpha acts like max in MiniMax
-				bSearchPv = false  // Probar luego sacando esta sentencia de esta condición
-				movesNoFailsHigh++ // Esta sentencia debería estar fuera de esta condición
+				alpha = score     // alpha acts like max in MiniMax
+				bSearchPv = false // Probar luego sacando esta sentencia de esta condición
+				//movesNoFailsHigh++ // Esta sentencia debería estar fuera de esta condición
 			}
 			//Se recolecta el mejor movimiento posible de la posición
 			if score > bestScore { // UpperBound y Exact
 				bestMove = move
 				bestScore = score
 			}
+			movesNoFailsHigh++
+			//bSearchPv = false
 		} else { // Si el movimiento es ilegal deshacemos y continuamos con el siguiente
 			b.UnMakeMove(move)
 		}

@@ -9,10 +9,10 @@ import (
 ORDEN DE LOS MOVIMIENTOS 0-255 (uint8):
 1. 255 PV MOVE / HASH MOVE
 2. 254 - 18 = 236 Capturas/Promociones* ganadoras (pieza capturada + Promoción - pieza recapturada = saldo positivo)
-3. 235 Movimiento asesino (Killer move) #1
-4. 234 Movimiento asesino (Killer move) #2
-5. 233 Counter Move
-6. 232 Capturas/Promociones** igualadas (pieza capturada + Promoción - pieza recapturada = 0)
+3. 235 Capturas/Promociones** igualadas (pieza capturada + Promoción - pieza recapturada = 0)
+4. 234 Movimiento asesino (Killer move) #1
+5. 233 Movimiento asesino (Killer move) #2
+6. 232 Counter Move
 7. 231 - 222 = 9 Movimientos tranquilos ordenados por History Moves o ¿¡Piece Square Table!?
 8. 8 - 8 = 0 Capturas/Promociones perdedoras** (pieza capturada + Promoción - pieza recapturada = saldo negativo)
 
@@ -35,14 +35,14 @@ func scoreMoves(b *board.Board, moves *board.MoveList, oldBestMove board.Move) {
 			if captureValue > 0 { // Capturas ganadoras
 				moves.List[i].SetScore(236 + uint8(captureValue))
 			} else if captureValue == 0 { // Capturas igualadas
-				moves.List[i].SetScore(232)
+				moves.List[i].SetScore(235)
 			} else { // Capturas perdedoras
 				moves.List[i].SetScore(8 + uint8(captureValue)) // Se suma porque el captureValue es negativo
 			}
 		} else if isKillerMove(b.Ply, move) > 0 { //Killer moves
-			moves.List[i].SetScore(233 + isKillerMove(b.Ply, move))
+			moves.List[i].SetScore(232 + isKillerMove(b.Ply, move))
 		} else if isCounterMove(b.WhiteToMove, move) {
-			moves.List[i].SetScore(233)
+			moves.List[i].SetScore(232)
 		} else { //History moves
 			moves.List[i].SetScore(9 + getHistoryMove(b.WhiteToMove, move))
 		}
