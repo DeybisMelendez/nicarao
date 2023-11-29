@@ -11,9 +11,9 @@ func virtualMobility(b *board.Board) (int, int) {
 	var blackKing board.Square = board.Square(bits.TrailingZeros64(b.Bitboards[board.Black][board.King]))
 	var mg int = (bits.OnesCount64(b.GetBishopAttacks(whiteKing, board.White)|b.GetRookAttacks(whiteKing, board.White)) -
 		bits.OnesCount64(b.GetBishopAttacks(blackKing, board.Black)|b.GetRookAttacks(blackKing, board.Black))) *
-		kingSafetyWeight[middleGame]
-	var eg int = (bits.OnesCount64(b.GetBishopAttacks(whiteKing, board.White)|b.GetRookAttacks(whiteKing, board.White)) -
-		bits.OnesCount64(b.GetBishopAttacks(blackKing, board.Black)|b.GetRookAttacks(blackKing, board.Black))) *
-		kingSafetyWeight[endGame]
-	return mg, eg
+		kingSafetyWeight[middleGame] * kingSafetyWeight[middleGame]
+	/*var eg int = (bits.OnesCount64(b.GetBishopAttacks(whiteKing, board.White)|b.GetRookAttacks(whiteKing, board.White)) -
+	bits.OnesCount64(b.GetBishopAttacks(blackKing, board.Black)|b.GetRookAttacks(blackKing, board.Black))) *
+	kingSafetyWeight[endGame]* kingSafetyWeight[middleGame]*/
+	return mg, 0
 }
