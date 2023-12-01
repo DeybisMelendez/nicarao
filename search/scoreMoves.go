@@ -42,7 +42,6 @@ func scoreMoves(b *board.Board, moves *board.MoveList, oldBestMove board.Move) {
 			} else {
 				moves.List[i].SetScore(0) // Capturas ilegales las ordenamos al final
 			}
-
 		} else if isKillerMove(b.Ply, move) > 0 { //Killer moves
 			moves.List[i].SetScore(245 + isKillerMove(b.Ply, move))
 		} else if isCounterMove(b.WhiteToMove, move) {
@@ -58,31 +57,6 @@ func scoreCaptures(moves *board.MoveList) {
 		moves.List[i].SetScore(getMVV_LVA(moves.List[i]))
 	}
 }
-
-//TODO: Convertir esto en un SEE para mejor evaluación de las capturas
-/*func recapturedValue(b *board.Board, move board.Move) uint8 {
-	b.MakeMove(move)
-	var captures board.MoveList
-	var captureMove board.Move
-	var kingSquare board.Square
-	var color uint8 = b.WhiteToMove // La legalidad debe ser probada en el turno enemigo
-	var valueCapture uint8
-	b.GeneratePseudoCaptureSquare(&captures, move.To())
-	for i := 0; i < int(captures.Index); i++ {
-		captureMove = captures.List[i]
-		b.MakeMove(captureMove)
-		kingSquare = board.Square(bits.TrailingZeros64(b.Bitboards[color][board.King]))
-		if !b.IsUnderAttack(kingSquare, color) {
-			b.UnMakeMove(captureMove)
-			valueCapture = pieceCaptureValue[move.Piece()]
-			break
-		} else {
-			b.UnMakeMove(captureMove)
-		}
-	}
-	b.UnMakeMove(move)
-	return valueCapture
-}*/
 
 /*
 
