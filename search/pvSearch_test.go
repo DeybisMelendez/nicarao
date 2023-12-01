@@ -34,7 +34,7 @@ func TestMatedIn(t *testing.T) {
 		{3, "8/3Q4/3p4/2b2n2/3N1p2/nR2B2b/p7/k1K5 w - - 0 1", "2.- Mate en 3"},
 		{3, "4K3/4P3/P1N2pP1/1BPk1P2/4N3/pP1p1Q2/1br2P2/q1r5 w - - 0 1", "3.- Mate en 3"},
 		{3, "8/4p3/2pNP3/Kp6/8/k1p5/p1P5/B7 w - - 0 1", "4.- Mate en 3"},
-		//{3, "1n2R3/2N5/3bBp2/1Kp1p3/1p1Pkpp1/3N4/3PPQ1n/3r4 w - - 0 1", "5.- Mate en 3"}, //FIXME: No encuentra todos mates
+		{3, "1n2R3/2N5/3bBp2/1Kp1p3/1p1Pkpp1/3N4/3PPQ1n/3r4 w - - 0 1", "5.- Mate en 3"}, //FIXME: No encuentra todos mates
 
 		{4, "8/1P5B/8/2P5/8/6K1/NkP3p1/RN6 w - - 0 1", "1.- Mate en 4"},
 		//{4, "2NK3k/2Np4/1p6/1b1P4/p1p2pRp/2r2p2/5P2/4n1n1 w - - 0 1", "2.- Mate en 4"},
@@ -66,7 +66,7 @@ func TestMatedIn(t *testing.T) {
 	}
 }
 func TestScore(t *testing.T) {
-	var margin int16 = 100
+	var margin int16 = 70
 	type testCase struct {
 		score int16
 		fen   string
@@ -74,7 +74,7 @@ func TestScore(t *testing.T) {
 
 	testCases := []testCase{
 		{220, "r2qr1k1/1bpp1pp1/p4n1p/1pb1n3/3p3B/1BP2N1P/PP3PP1/RN1Q1RK1 w - - 0 13"},
-		//{230, "2r3k1/p3Rpb1/p1P3pp/8/4P3/2r1BK2/5PPP/1R6 w - - 1 28"}, // Capablanca - Flohr, AVRO 1938
+		{230, "2r3k1/p3Rpb1/p1P3pp/8/4P3/2r1BK2/5PPP/1R6 w - - 1 28"},         // Capablanca - Flohr, AVRO 1938
 		{140, "3r1rk1/pp3ppp/2n2n2/4p3/8/2B1PQ2/PPq1BPPP/R4RK1 w - - 7 16"},   // Capablanca - Max Euwe, AVRO 1938
 		{140, "6k1/2Rn1ppp/1ppr4/8/3p4/1N4PP/PPP2P2/6K1 w - - 4 27"},          // Capablanca - Rubinstein, Berlin 1928
 		{290, "2r1k2r/p2q1ppp/1pn2n2/1N1p4/Qb3B2/6P1/P3PPKP/RNR5 w k - 0 15"}, // Capablanca - Alekhine, 1927

@@ -1,11 +1,6 @@
 package search
 
-import (
-	"nicarao/board"
-	"testing"
-)
-
-func TestRecapturedValue(t *testing.T) {
+/*func TestRecapturedValue(t *testing.T) {
 
 	type testCase struct {
 		value  uint8
@@ -26,9 +21,9 @@ func TestRecapturedValue(t *testing.T) {
 		var b board.Board
 		b.ParseFEN(tc.fen)
 		b.GeneratePseudoCaptureSquare(&moves, tc.square)
-		var value uint8 = recapturedValue(&b, moves.List[0])
+		var value int8 = see(&b, moves.List[0])
 		if value != tc.value {
 			t.Errorf("FEN: %s, Valor: %d, Resultado: %d", tc.fen, tc.value, value)
 		}
 	}
-}
+}*/

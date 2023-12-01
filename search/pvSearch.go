@@ -111,6 +111,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 		//Sumamos el indice para no evaluar movimientos ya evaluados
 		minIndexMoves++
 		newDepth = depth - 1
+		isExtended = false
 		if isInCheck || givingCheck {
 			newDepth++ //Check Extension
 			isExtended = true

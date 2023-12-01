@@ -5,7 +5,8 @@ import (
 	"nicarao/board"
 )
 
-var pieceCaptureValue [7]uint8 = [7]uint8{0, 1, 3, 3, 5, 9, 0}
+var pieceCaptureValue [7]int8 = [7]int8{0, 1, 3, 3, 5, 9, 10}
+var promotionValue [7]uint8 = [7]uint8{0, 0, 1, 2, 3, 4, 0}
 var transpositionTable [ttSize]TranspositionTable
 
 type TranspositionTable struct {
