@@ -2,7 +2,7 @@ package search
 
 const ttSize uint64 = 32 * MB / 18 //18 es el tamaño de bytes que ocupa cada entry de tt
 const killerMovesMaxPly = 12
-const LMRFullDepthMoves = 3 //En orden de la puntuación de movimientos, hasta Counter Moves como mínimo
+const LMRFullDepthMoves = 20 //En orden de la puntuación de movimientos, hasta Counter Moves como mínimo
 const LMReductionLimit = 3
 const deltaPruning int16 = 900
 const internalIDminDepth = 2
