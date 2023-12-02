@@ -1,5 +1,10 @@
 package search
 
+import (
+	"nicarao/board"
+	"testing"
+)
+
 /*func TestRecapturedValue(t *testing.T) {
 
 	type testCase struct {
@@ -27,3 +32,29 @@ package search
 		}
 	}
 }*/
+func TestSee(t *testing.T) {
+	type testCase struct {
+		fen      string
+		solution int8
+		square   board.Square
+	}
+
+	testCases := []testCase{
+		{"7k/5nb1/6n1/4p3/2N3N1/2Bn1N2/1P5B/K7 w - - 0 1", 1, board.E5},
+		{"7k/8/5p2/4q3/3P4/8/8/K7 w - - 0 1", 8, board.E5},
+		{"7k/8/3p4/4p3/3P1Q2/8/8/K7 w - - 0 1", 1, board.E5},
+		{"7k/8/3p1p2/4p3/3P1Q2/8/8/K7 w - - 0 1", 0, board.E5},
+		{"7k/8/3b4/4p3/3P1Q2/8/8/K7 w - - 0 1", 1, board.E5},
+		{"7K/3B4/4r3/4n3/3B4/7k/8/8 w - - 0 1", 3, board.E5},
+	}
+
+	for _, tc := range testCases {
+		b := &board.Board{}
+		b.ParseFEN(tc.fen)
+		square := board.Square(tc.square)
+		result := see(b, square)
+		if result != tc.solution {
+			t.Errorf("see() en la posición %d: resultado incorrecto, se esperaba %d pero se obtuvo %d", square, tc.solution, result)
+		}
+	}
+}

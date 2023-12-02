@@ -9,12 +9,12 @@ import (
 ORDEN DE LOS MOVIMIENTOS 0-255 (uint8):
 1. 255 PV MOVE / HASH MOVE
 2. 254 - PromoValue (min 1 - max 4) = 250 Promociones
-3. 249 Capturas ganadoras
-4. 248 Capturas igualadas
-5. 247 Movimiento asesino (Killer move) #1
-6. 246 Movimiento asesino (Killer move) #2
-7. 245 Counter Move
-8. 200->3 Movimientos tranquilos ordenados por History Moves o ¿¡Piece Square Table!?
+3. 245-253 Capturas ganadoras maxima cantidad ganadora es 9 (dama) Nota: Pendiente verificar
+4. 244 Capturas igualadas
+5. 243 Movimiento asesino (Killer move) #1
+6. 242 Movimiento asesino (Killer move) #2
+7. 241 Counter Move
+8. 3-200 Movimientos tranquilos ordenados por History Moves o ¿¡Piece Square Table!?
 9. 2 jugadas tranquilas sin evaluar pero posiblemente legales
 10. 1 Capturas perdedoras
 11. 0 jugadas evaluadas ilegales (capturas)
@@ -33,9 +33,9 @@ func scoreMoves(b *board.Board, moves *board.MoveList, oldBestMove board.Move) {
 			captureValue, isCaptureLegal := seeCapture(b, move)
 			if isCaptureLegal {
 				if captureValue > 0 { // Capturas ganadoras
-					moves.List[i].SetScore(249)
+					moves.List[i].SetScore(244 + uint8(captureValue))
 				} else if captureValue == 0 { // Capturas igualadas
-					moves.List[i].SetScore(248)
+					moves.List[i].SetScore(244)
 				} else { // Capturas perdedoras
 					moves.List[i].SetScore(1)
 				}
@@ -43,9 +43,9 @@ func scoreMoves(b *board.Board, moves *board.MoveList, oldBestMove board.Move) {
 				moves.List[i].SetScore(0) // Capturas ilegales las ordenamos al final
 			}
 		} else if isKillerMove(b.Ply, move) > 0 { //Killer moves
-			moves.List[i].SetScore(245 + isKillerMove(b.Ply, move))
+			moves.List[i].SetScore(242 + isKillerMove(b.Ply, move))
 		} else if isCounterMove(b.WhiteToMove, move) {
-			moves.List[i].SetScore(245)
+			moves.List[i].SetScore(242)
 		} else { //History moves
 			moves.List[i].SetScore(2 + getHistoryMove(b.WhiteToMove, move))
 		}
@@ -111,9 +111,9 @@ func see(b *board.Board, square board.Square) int8 {
 	if smallestAttacker.Piece() != board.None {
 		b.MakeMove(smallestAttacker)
 		value = pieceCaptureValue[smallestAttacker.Capture()] - see(b, square)
-		/*if value < 0 {
+		if value < 0 {
 			value = 0
-		}*/
+		}
 		b.UnMakeMove(smallestAttacker)
 	}
 	return value

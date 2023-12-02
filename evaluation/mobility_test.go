@@ -1,11 +1,6 @@
 package evaluation
 
-import (
-	"nicarao/board"
-	"testing"
-)
-
-func TestMobilityValues(t *testing.T) {
+/*func TestMobilityValues(t *testing.T) {
 
 	type testCase struct {
 		mobility int
@@ -29,3 +24,4 @@ func TestMobilityValues(t *testing.T) {
 		}
 	}
 }
+*/

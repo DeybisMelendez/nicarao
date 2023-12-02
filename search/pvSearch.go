@@ -148,7 +148,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 		if isLegal { //Si el movimiento es legal!
 			hasLegalMove = true
 			if bSearchPv {
-				score = -PVSearch(b, -beta, -alpha, depth-1)
+				score = -PVSearch(b, -beta, -alpha, newDepth)
 			} else {
 				score = -zwSearch(b, -alpha, newDepth)
 				if score > alpha { // in fail-soft ... && score < beta ) is common

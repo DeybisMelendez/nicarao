@@ -1,12 +1,59 @@
 package evaluation
 
 const (
-	middleGame  uint8 = 0
-	endGame     uint8 = 1
-	pawnPhase         = 0
-	knightPhase       = 1
-	bishopPhase       = 1
-	rookPhase         = 2
-	queenPhase        = 4
-	totalPhase        = knightPhase*4 + bishopPhase*4 + rookPhase*4 + queenPhase*2 // + pawnPhase*16
+	openingPhase uint8 = 0
+	endPhase     uint8 = 1
+	pawnPhase          = 0
+	knightPhase        = 1
+	bishopPhase        = 1
+	rookPhase          = 2
+	queenPhase         = 4
+	totalPhase         = knightPhase*4 + bishopPhase*4 + rookPhase*4 + queenPhase*2 // + pawnPhase*16
 )
+
+var distanceBonus [64][64]int
+
+var kingTropism [7][64][64]int16
+
+var diagNW = [64]int{
+	0, 1, 2, 3, 4, 5, 6, 7,
+	1, 2, 3, 4, 5, 6, 7, 8,
+	2, 3, 4, 5, 6, 7, 8, 9,
+	3, 4, 5, 6, 7, 8, 9, 10,
+	4, 5, 6, 7, 8, 9, 10, 11,
+	5, 6, 7, 8, 9, 10, 11, 12,
+	6, 7, 8, 9, 10, 11, 12, 13,
+	7, 8, 9, 10, 11, 12, 13, 14,
+}
+var diagNE = [64]int{
+	7, 6, 5, 4, 3, 2, 1, 0,
+	8, 7, 6, 5, 4, 3, 2, 1,
+	9, 8, 7, 6, 5, 4, 3, 2,
+	10, 9, 8, 7, 6, 5, 4, 3,
+	11, 10, 9, 8, 7, 6, 5, 4,
+	12, 11, 10, 9, 8, 7, 6, 5,
+	13, 12, 11, 10, 9, 8, 7, 6,
+	14, 13, 12, 11, 10, 9, 8, 7,
+}
+var bonusDiagDistance = [15]int{5, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+
+var row = [64]int{
+	7, 7, 7, 7, 7, 7, 7, 7,
+	6, 6, 6, 6, 6, 6, 6, 6,
+	5, 5, 5, 5, 5, 5, 5, 5,
+	4, 4, 4, 4, 4, 4, 4, 4,
+	3, 3, 3, 3, 3, 3, 3, 3,
+	2, 2, 2, 2, 2, 2, 2, 2,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	0, 0, 0, 0, 0, 0, 0, 0}
+
+var col = [64]int{
+	0, 1, 2, 3, 4, 5, 6, 7,
+	0, 1, 2, 3, 4, 5, 6, 7,
+	0, 1, 2, 3, 4, 5, 6, 7,
+	0, 1, 2, 3, 4, 5, 6, 7,
+	0, 1, 2, 3, 4, 5, 6, 7,
+	0, 1, 2, 3, 4, 5, 6, 7,
+	0, 1, 2, 3, 4, 5, 6, 7,
+	0, 1, 2, 3, 4, 5, 6, 7,
+}

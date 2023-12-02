@@ -5,28 +5,25 @@ import (
 	"nicarao/board"
 )
 
-func getPST(b *board.Board) (int, int) {
-	var mg int
-	var eg int
+func getPST(b *board.Board, piece board.Piece, phase uint8) int {
+	var value int
 	var pieceBoard uint64
 	var from board.Square
-	for piece := board.Pawn; piece < board.King+1; piece++ {
-		pieceBoard = b.Bitboards[board.White][piece]
-		for pieceBoard != 0 {
-			from = board.Square(bits.TrailingZeros64(pieceBoard))
-			mg += pst[middleGame][piece][whitePST[from]]
-			eg += pst[endGame][piece][whitePST[from]]
-			pieceBoard &= pieceBoard - 1
-		}
-		pieceBoard = b.Bitboards[board.Black][piece]
-		for pieceBoard != 0 {
-			from = board.Square(bits.TrailingZeros64(pieceBoard))
-			mg -= pst[middleGame][piece][from]
-			eg -= pst[endGame][piece][from]
-			pieceBoard &= pieceBoard - 1
-		}
+	//for piece := board.Pawn; piece < board.King+1; piece++ {
+	pieceBoard = b.Bitboards[board.White][piece]
+	for pieceBoard != 0 {
+		from = board.Square(bits.TrailingZeros64(pieceBoard))
+		value += pst[phase][piece][whitePST[from]]
+		pieceBoard &= pieceBoard - 1
 	}
-	return mg, eg
+	pieceBoard = b.Bitboards[board.Black][piece]
+	for pieceBoard != 0 {
+		from = board.Square(bits.TrailingZeros64(pieceBoard))
+		value -= pst[phase][piece][from]
+		pieceBoard &= pieceBoard - 1
+	}
+	//}
+	return value
 }
 
 var whitePST = [64]int16{ //Ajuste para obtener el index para White
@@ -52,7 +49,7 @@ var whitePST = [64]int16{ //Ajuste para obtener el index para White
 }*/
 
 var pst [2][7][64]int = [2][7][64]int{
-	middleGame: {
+	openingPhase: {
 		board.Pawn: {
 			0, 0, 0, 0, 0, 0, 0, 0,
 			98, 134, 61, 95, 68, 126, 34, -11,
@@ -114,7 +111,7 @@ var pst [2][7][64]int = [2][7][64]int{
 			-15, 36, 12, -54, 8, -28, 24, 14,
 		},
 	},
-	endGame: {
+	endPhase: {
 		board.Pawn: {
 			0, 0, 0, 0, 0, 0, 0, 0,
 			178, 173, 158, 134, 147, 132, 165, 187,
