@@ -9,7 +9,6 @@ func getPST(b *board.Board, piece board.Piece, phase uint8) int {
 	var value int
 	var pieceBoard uint64
 	var from board.Square
-	//for piece := board.Pawn; piece < board.King+1; piece++ {
 	pieceBoard = b.Bitboards[board.White][piece]
 	for pieceBoard != 0 {
 		from = board.Square(bits.TrailingZeros64(pieceBoard))
@@ -22,7 +21,6 @@ func getPST(b *board.Board, piece board.Piece, phase uint8) int {
 		value -= pst[phase][piece][from]
 		pieceBoard &= pieceBoard - 1
 	}
-	//}
 	return value
 }
 

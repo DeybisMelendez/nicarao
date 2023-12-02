@@ -13,6 +13,8 @@ var StopTime int64 = -1
 func SearchWithStopTime(b *board.Board, stopTime int64) {
 	var start int64 = time.Now().UnixMilli()
 	var bestmove string
+	var flag uint8
+	var scoreType string = "cp"
 	restartSearch()
 	StopTime = stopTime
 
@@ -23,7 +25,13 @@ func SearchWithStopTime(b *board.Board, stopTime int64) {
 		}
 		var time_elapsed int64 = time.Now().UnixMilli() - start
 		bestmove = GetBestMove(b.Hash).MoveToString()
-		fmt.Printf("info depth %d score cp %d nodes %d time %d pv %s\n", depth, score, b.Nodes, time_elapsed, bestmove)
+		flag = GetFlagScore(b.Hash)
+		if flag == TTLowerBound {
+			scoreType = "lowerbound"
+		} else if flag == TTUpperBound {
+			scoreType = "upperbound"
+		}
+		fmt.Printf("info depth %d score %s %d nodes %d time %d pv %s\n", depth, scoreType, score, b.Nodes, time_elapsed, bestmove)
 	}
 	fmt.Println("bestmove ", bestmove)
 }

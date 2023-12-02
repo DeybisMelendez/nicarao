@@ -71,20 +71,13 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 	var bestScore int16 = math.MinInt16
 	var minIndexMoves uint8
 	var scoreMove uint8
-	var newDepth uint8
-	var movesNoFailsHigh = 0
 	var isLegal bool
-	var ourKing board.Square   //= board.Square(bits.TrailingZeros64(b.Bitboards[b.WhiteToMove][board.King]))
-	var enemyKing board.Square //= board.Square(bits.TrailingZeros64(b.Bitboards[b.GetEnemyColor()][board.King]))
-	var isInCheck bool         // = b.IsUnderAttack(ourKing, b.WhiteToMove)
-	var givingCheck bool       //= b.IsUnderAttack(enemyKing, b.GetEnemyColor())
+	var ourKing board.Square = board.Square(bits.TrailingZeros64(b.Bitboards[b.WhiteToMove][board.King]))
+	//var enemyKing board.Square //= board.Square(bits.TrailingZeros64(b.Bitboards[b.GetEnemyColor()][board.King]))
+	var isInCheck bool = b.IsUnderAttack(ourKing, b.WhiteToMove)
+	//var givingCheck bool       //= b.IsUnderAttack(enemyKing, b.GetEnemyColor())
 	var isExtended bool
-	if (depth >= LMRFullDepthMoves && LMRisActive) || (depth > nullMovePruningR && isNullMovePruningActive) {
-		ourKing = board.Square(bits.TrailingZeros64(b.Bitboards[b.WhiteToMove][board.King]))
-		enemyKing = board.Square(bits.TrailingZeros64(b.Bitboards[b.GetEnemyColor()][board.King]))
-		isInCheck = b.IsUnderAttack(ourKing, b.WhiteToMove)
-		givingCheck = b.IsUnderAttack(enemyKing, b.GetEnemyColor())
-	}
+
 	b.GeneratePseudoMoves(&moves)
 	if orderingMoveIsActive {
 		scoreMoves(b, &moves, bestMove) // ¿¡Posiblemente sea mejor intentar puntuar solo jugadas legales!?
@@ -110,51 +103,27 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 
 		//Sumamos el indice para no evaluar movimientos ya evaluados
 		minIndexMoves++
-		newDepth = depth - 1
 		isExtended = false
-		if isInCheck || givingCheck {
-			newDepth++ //Check Extension
+		if isInCheck || move.Capture() != board.None || move.Promotion() != board.None || bestMove == move ||
+			isKillerMove(b.Ply, move) > 0 || isCounterMove(color, move) {
 			isExtended = true
 		}
-		if move.Capture() != board.None || move.Promotion() != board.None {
-			// No reducir capturas
-			isExtended = true
-		}
-
-		//Mull Nove Pruning
-		if isNullMovePruningActive && depth > nullMovePruningR &&
-			depth > nullMovePruningLimit && !isInCheck {
-			var nullBoard *board.Board = b.MakeNull()
-			score = -zwSearch(nullBoard, -beta+1, depth-1-nullMovePruningR)
-			if score >= beta {
-				return beta
-			}
-		}
-
-		//Late Move Reduction
-		if LMRisActive {
-			if !bSearchPv && movesNoFailsHigh >= LMRFullDepthMoves && depth >= LMReductionLimit {
-				if !isInCheck && !givingCheck && !isExtended { // Si no está en jaque
-					newDepth = depth / 3
-				}
-			}
-		}
-
 		//PVSearch
 		b.MakeMove(move)
 		kingSquare = board.Square(bits.TrailingZeros64(b.Bitboards[color][board.King]))
 		isLegal = !b.IsUnderAttack(kingSquare, color)
 
 		if isLegal { //Si el movimiento es legal!
-			hasLegalMove = true
-			if bSearchPv {
-				score = -PVSearch(b, -beta, -alpha, newDepth)
+			hasLegalMove = true // Debemos determinar que el jugador tiene al menos una jugada legal
+			if bSearchPv || isExtended {
+				score = -PVSearch(b, -beta, -alpha, depth-1)
 			} else {
-				score = -zwSearch(b, -alpha, newDepth)
+				score = -zwSearch(b, -alpha, depth-1)
 				if score > alpha { // in fail-soft ... && score < beta ) is common
-					score = -PVSearch(b, -beta, -alpha, newDepth) // re-search
+					score = -PVSearch(b, -beta, -alpha, depth-1) // re-search
 				}
 			}
+
 			b.UnMakeMove(move)
 			if score >= beta {
 				if isTimeToStop(b.Nodes) {
@@ -163,7 +132,7 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 				if move.Capture() == board.None {
 					saveKillerMove(b.Ply, move)
 					saveCounterMove(color, move)
-					saveHistoryMove(color, move, newDepth)
+					saveHistoryMove(color, move, depth)
 				}
 				if isTranspositionTableActive {
 					recordHash(b.Hash, beta, depth, TTLowerBound, move, b.HalfmoveClock)
@@ -172,15 +141,15 @@ func PVSearch(b *board.Board, alpha int16, beta int16, depth uint8) int16 {
 			}
 			if score > alpha {
 				hashFlag = TTExact
-				alpha = score     // alpha acts like max in MiniMax
-				bSearchPv = false // Probar luego sacando esta sentencia de esta condición
+				alpha = score // alpha acts like max in MiniMax
 			}
 			//Se recolecta el mejor movimiento posible de la posición
 			if score > bestScore { // UpperBound y Exact
 				bestMove = move
 				bestScore = score
 			}
-			movesNoFailsHigh++
+			bSearchPv = false
+
 		} else { // Si el movimiento es ilegal deshacemos y continuamos con el siguiente
 			b.UnMakeMove(move)
 		}

@@ -9,11 +9,7 @@ import (
 func virtualMobility(b *board.Board, whiteKing board.Square, blackKing board.Square) int {
 	return (bits.OnesCount64(b.GetBishopAttacks(whiteKing, board.White)|b.GetRookAttacks(whiteKing, board.White)) -
 		bits.OnesCount64(b.GetBishopAttacks(blackKing, board.Black)|b.GetRookAttacks(blackKing, board.Black))) *
-		kingSafetyWeight // * kingSafetyWeight[middleGame]
-	/*var eg int = (bits.OnesCount64(b.GetBishopAttacks(whiteKing, board.White)|b.GetRookAttacks(whiteKing, board.White)) -
-	bits.OnesCount64(b.GetBishopAttacks(blackKing, board.Black)|b.GetRookAttacks(blackKing, board.Black))) *
-	kingSafetyWeight[endGame]* kingSafetyWeight[middleGame]*/
-	//return mg, 0
+		kingSafetyWeight
 }
 
 func getKingTropismPiece(b *board.Board, pieceType board.Piece, whiteKing board.Square, blackKing board.Square) int {

@@ -10,6 +10,8 @@ var mobilityWeights [2][7]int = [2][7]int{
 	openingPhase: {0, 0, 15, 10, 8, 0, 0},
 	endPhase:     {0, 0, 10, 10, 15, 0, 0},
 }
+var pawnDoubledWeight int = 10
+
 var kingSafetyWeight int = 10
 
 var tempoWeight int = 28

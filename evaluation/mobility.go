@@ -25,8 +25,8 @@ func getMobilityPiece(b *board.Board, piece board.Piece, color uint8) int {
 			attacks |= b.GetBishopAttacks(from, color)
 		case board.Rook:
 			attacks |= b.GetRookAttacks(from, color)
-		case board.Queen:
-			attacks |= b.GetBishopAttacks(from, color) | b.GetRookAttacks(from, color)
+			/*case board.Queen:
+			attacks |= b.GetBishopAttacks(from, color) | b.GetRookAttacks(from, color)*/
 		}
 		pieceBoard &= pieceBoard - 1
 	}

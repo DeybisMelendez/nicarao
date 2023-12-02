@@ -5,7 +5,7 @@ import "nicarao/board"
 //http://web.archive.org/web/20070809015843/www.seanet.com/%7Ebrucemo/topics/hashing.htm
 func recordHash(hash uint64, value int16, depth uint8, flag uint8, bestmove board.Move, age uint8) {
 	ttEntry := &transpositionTable[hash%ttSize]
-	if depth > ttEntry.Depth && age >= ttEntry.Age {
+	if depth >= ttEntry.Depth && age >= ttEntry.Age {
 		ttEntry.Depth = depth
 		ttEntry.Flag = flag
 		ttEntry.Value = value
@@ -37,6 +37,10 @@ func probeHash(hash uint64, alpha int16, beta int16, depth uint8, move *board.Mo
 func GetBestMove(hash uint64) board.Move {
 	var entry TranspositionTable = transpositionTable[hash%ttSize]
 	return entry.BestMove
+}
+func GetFlagScore(hash uint64) uint8 {
+	var entry TranspositionTable = transpositionTable[hash%ttSize]
+	return entry.Flag
 }
 
 /*func getPV(fen string, depth int8, bestmove board.Move) string {

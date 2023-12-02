@@ -37,6 +37,12 @@ func Evaluate(b *board.Board) int16 {
 			openingEval += getKingTropismPiece(b, piece, whiteKing, blackKing)
 		}
 	}
+	//Structure Pawn Evaluation
+	if isStructurePawnActive {
+		var pawns = getStructurePawnEval(b)
+		openingEval += pawns
+		endGameEval += pawns
+	}
 	//King Evaluation
 	if isVirtualMobilityActive {
 		openingEval += virtualMobility(b, whiteKing, blackKing)
@@ -55,6 +61,6 @@ func Evaluate(b *board.Board) int16 {
 	// Tempo bonus
 	score += tempo(b.WhiteToMove)
 	// Rule 50
-	score *= (100 - int(b.HalfmoveClock)) / 100
+	score = score * (100 - int(b.HalfmoveClock)) / 100
 	return int16(score) * turn
 }
