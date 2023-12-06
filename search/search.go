@@ -15,9 +15,7 @@ func SearchWithStopTime(b *board.Board, stopTime int64) {
 	var bestmove string
 	var flag uint8
 	var scoreType string = "cp"
-	restartSearch()
 	StopTime = stopTime
-
 	for depth := uint8(1); depth < math.MaxUint8; depth++ {
 		var score int16 = PVSearch(b, -Inf, Inf, depth)
 		if isTimeToStop(b.Nodes) {
@@ -34,6 +32,7 @@ func SearchWithStopTime(b *board.Board, stopTime int64) {
 		fmt.Printf("info depth %d score %s %d nodes %d time %d pv %s\n", depth, scoreType, score, b.Nodes, time_elapsed, bestmove)
 	}
 	fmt.Println("bestmove ", bestmove)
+	restartSearch()
 }
 
 func SearchWithDepth(b *board.Board, depth uint8) {
@@ -45,6 +44,7 @@ func restartSearch() {
 	counterMoves = [2][7][64]board.Move{}
 	Stopped = false
 	StopTime = -1
+	transpositionTable = [ttSize]TranspositionTable{}
 }
 
 func isTimeToStop(nodes int) bool {

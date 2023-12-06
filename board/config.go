@@ -5,7 +5,7 @@ En este script se declaran todas las constantes y variables configurables para e
 */
 
 //Máximo número de capas posibles para almacenar historial de unMakeInfo
-const MaxPly uint8 = 64
+const MaxPly uint16 = 400
 
 //Máximo número de movimientos almacenables en un MoveList
 const MaxMoveList uint8 = 128

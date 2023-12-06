@@ -159,3 +159,42 @@ func StringToSquare(s string) (Square, error) {
 
 	return Square(rank*8 + file), nil
 }
+func ParseMove(b *Board, movestr string) Move {
+	var move Move
+	var promo Piece
+	var moves MoveList
+	/*if len(movestr) < 4 || len(movestr) > 5 {
+		return mv, errors.New("Invalid move to parse.")
+	}*/
+	from, _ := StringToSquare(movestr[0:2])
+	to, _ := StringToSquare(movestr[2:4])
+
+	/*if errf != nil || errto != nil {
+		return move //, errors.New("Invalid move to parse.")
+	}*/
+	if len(movestr) == 5 {
+		switch movestr[4] {
+		case 'n':
+			promo = Knight
+		case 'b':
+			promo = Bishop
+		case 'q':
+			promo = Queen
+		case 'r':
+			promo = Rook
+			/*default:
+			return move, errors.New("Invalid promotion symbol in move.")*/
+		}
+	}
+	b.GeneratePseudoMoves(&moves)
+	for i := 0; i < int(moves.Index); i++ {
+		if moves.List[i].From() == from && moves.List[i].To() == to && moves.List[i].Promotion() == promo {
+			move = moves.List[i]
+			break
+		}
+	}
+	if move == 0 {
+		panic("error: movimiento no encontrado válido")
+	}
+	return move //, nil
+}

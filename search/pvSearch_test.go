@@ -65,6 +65,7 @@ func TestMatedIn(t *testing.T) {
 		}
 	}
 }
+
 func TestScore(t *testing.T) {
 	var margin int16 = 100
 	type testCase struct {
@@ -74,11 +75,11 @@ func TestScore(t *testing.T) {
 
 	testCases := []testCase{
 		//{220, "r2qr1k1/1bpp1pp1/p4n1p/1pb1n3/3p3B/1BP2N1P/PP3PP1/RN1Q1RK1 w - - 0 13"},
-		//{230, "2r3k1/p3Rpb1/p1P3pp/8/4P3/2r1BK2/5PPP/1R6 w - - 1 28"},                  // Capablanca - Flohr, AVRO 1938
-		{140, "3r1rk1/pp3ppp/2n2n2/4p3/8/2B1PQ2/PPq1BPPP/R4RK1 w - - 7 16"},            // Capablanca - Max Euwe, AVRO 1938
-		{140, "6k1/2Rn1ppp/1ppr4/8/3p4/1N4PP/PPP2P2/6K1 w - - 4 27"},                   // Capablanca - Rubinstein, Berlin 1928
-		{290, "2r1k2r/p2q1ppp/1pn2n2/1N1p4/Qb3B2/6P1/P3PPKP/RNR5 w k - 0 15"},          // Capablanca - Alekhine, 1927
-		{320, "r2q1rk1/ppp2ppn/2np2b1/1B2pNb1/4P1P1/2PP1N2/PP3P2/R1BQR1K1 w - - 1 15"}, // Capablanca - Frank Marshall, 1909
+		//{230, "2r3k1/p3Rpb1/p1P3pp/8/4P3/2r1BK2/5PPP/1R6 w - - 1 28"},         // Capablanca - Flohr, AVRO 1938
+		{140, "3r1rk1/pp3ppp/2n2n2/4p3/8/2B1PQ2/PPq1BPPP/R4RK1 w - - 7 16"},   // Capablanca - Max Euwe, AVRO 1938
+		{140, "6k1/2Rn1ppp/1ppr4/8/3p4/1N4PP/PPP2P2/6K1 w - - 4 27"},          // Capablanca - Rubinstein, Berlin 1928
+		{290, "2r1k2r/p2q1ppp/1pn2n2/1N1p4/Qb3B2/6P1/P3PPKP/RNR5 w k - 0 15"}, // Capablanca - Alekhine, 1927
+		//{320, "r2q1rk1/ppp2ppn/2np2b1/1B2pNb1/4P1P1/2PP1N2/PP3P2/R1BQR1K1 w - - 1 15"}, // Capablanca - Frank Marshall, 1909
 	}
 
 	for _, tc := range testCases {

@@ -25,6 +25,9 @@ int zwSearch(int beta, int depth ) {
 
 //fail-hard zero window search, returns either beta-1 or beta
 func zwSearch(b *board.Board, beta int16, depth uint8) int16 {
+	if isTimeToStop(b.Nodes) {
+		return 0
+	}
 	if depth == 0 {
 		return evaluation.Evaluate(b) //Quiesce tarda demasiado?
 	}
@@ -49,6 +52,9 @@ func zwSearch(b *board.Board, beta int16, depth uint8) int16 {
 		} else {
 			b.UnMakeMove(move)
 		}
+	}
+	if isTimeToStop(b.Nodes) {
+		return 0
 	}
 	return beta - 1 // fail-hard, return alpha
 }

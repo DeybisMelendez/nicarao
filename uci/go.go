@@ -9,7 +9,6 @@ import (
 
 // HandleGo maneja el comando 'go' de UCI
 func HandleGo(tokens []string) {
-	var start int64 = time.Now().UnixMilli()
 	//var depth int
 	var wtime int
 	var btime int
@@ -60,11 +59,12 @@ func HandleGo(tokens []string) {
 	if wtime != 0 || btime != 0 { // Time to Play
 		var timeLeft int
 		if boardUCI.WhiteToMove == board.White {
-			timeLeft = (wtime / 40) + winc
+			timeLeft = (wtime / 60) + winc
 		} else {
-			timeLeft = (btime / 40) + binc
+			timeLeft = (btime / 60) + binc
 		}
-		search.SearchWithStopTime(&boardUCI, start+int64(timeLeft))
+		var start int64 = time.Now().UnixMilli()
+		go search.SearchWithStopTime(&boardUCI, start+int64(timeLeft))
 	}
 
 	// Iniciar la búsqueda con la profundidad proporcionada

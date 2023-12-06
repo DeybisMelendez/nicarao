@@ -1,10 +1,10 @@
 package main
 
-import "nicarao/board"
+import "nicarao/uci"
 
 func main() {
-	//uci.StartUCI()
-	var mask uint64 = 0
+	uci.StartUCI()
+	/*var mask uint64 = 0
 	var fileNumber = 4
 	var rankNumber = 4
 	for rank := 0; rank < 8; rank++ {
@@ -21,5 +21,5 @@ func main() {
 			}
 		}
 	}
-	board.PrintBitboard(mask)
+	board.PrintBitboard(mask)*/
 }

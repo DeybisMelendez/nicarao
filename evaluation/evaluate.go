@@ -57,7 +57,7 @@ func Evaluate(b *board.Board) int16 {
 	}
 	phase = (phase*256 + (totalPhase / 2)) / totalPhase
 
-	score = (openingEval*(256-phase) + endGameEval*phase) / 256
+	score = (endGameEval*(256-phase) + openingEval*phase) / 256
 	// Tempo bonus
 	score += tempo(b.WhiteToMove)
 	// Rule 50
